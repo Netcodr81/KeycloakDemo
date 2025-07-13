@@ -1,0 +1,110 @@
+﻿@using Microsoft.AspNetCore.Authentication
+@rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
+@inject IHttpContextAccessor HttpContextAccessor
+
+
+<div class="border-b border-gray-200 bg-white tablet:px-4 py-5 px-6">
+    <div class="mt-4 ml-4 flex flex-wrap items-center justify-between sm:flex-nowrap">
+        <div class="mt-4 ml-4">
+            <h3 class="text-base font-semibold text-gray-900">Access Token</h3>
+        </div>
+        <div class="mt-4 ml-4 shrink-0 gap-2 flex">
+            <button @onclick="ShowAccessToken" type="button"
+                    class="relative inline-flex items-center rounded-md bg-zinc-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-zinc-500 focus-visible:outline-2 focus-visible:outline-offset-2">
+                Show Access Token
+            </button>
+            <button @onclick="DecodeAccessToken" type="button"
+                    class="relative inline-flex items-center rounded-md bg-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-800 shadow-xs hover:bg-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50" disabled="@String.IsNullOrEmpty(AccessToken)">
+                Decode Access Token
+            </button>
+            <button @onclick="ClearAccessToken" type="button"
+                    class="relative inline-flex items-center rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-400 focus-visible:outline-2 focus-visible:outline-offset-2 ">
+                Clear Access Token
+            </button>
+            <button @onclick="CopyAccessToken" type="button" class="relative inline-flex text-white items-center rounded-md bg-blue-800 px-3 py-2 text-sm font-semibold  shadow-xs hover:bg-blue-600 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50" disabled="@String.IsNullOrEmpty(AccessToken)">
+                Copy Access Token
+            </button>
+        </div>
+    </div>
+    <div class="min-h-[600px] max-h-[600px] border-zinc-800 border p-8 mt-4 break-all overflow-y-auto">
+        @if (!string.IsNullOrEmpty(AccessToken) && string.IsNullOrEmpty(DecodedToken))
+        {
+            <p>@AccessToken</p>
+        }
+        @if (!string.IsNullOrEmpty(AccessToken) && !string.IsNullOrEmpty(DecodedToken))
+        {
+            <pre>@DecodedToken</pre>
+        }
+
+    </div>
+</div>
+
+@code {
+
+    string AccessToken { get; set; } = string.Empty;
+    string DecodedToken { get; set; } = string.Empty;
+
+    private async Task ShowAccessToken()
+    {
+        var accessToken = await HttpContextAccessor.HttpContext.GetTokenAsync("access_token");
+        DecodedToken = string.Empty;
+
+        if (accessToken is not null)
+        {
+            var handler = new JwtSecurityTokenHandler();
+
+            var token = handler.ReadJwtToken(accessToken);
+
+            AccessToken = accessToken;
+        }
+    }
+
+    private void ClearAccessToken()
+    {
+        AccessToken = string.Empty;
+        DecodedToken = string.Empty;
+    }
+
+    private async Task CopyAccessToken()
+    {
+        if (!string.IsNullOrEmpty(AccessToken) && !string.IsNullOrEmpty(DecodedToken))
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", DecodedToken);
+            await JSRuntime.InvokeVoidAsync("alert", "Decoded Access Token copied to clipboard.");
+        }
+
+        if (!string.IsNullOrEmpty(AccessToken) && string.IsNullOrEmpty(DecodedToken))
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", AccessToken);
+            await JSRuntime.InvokeVoidAsync("alert", "Access Token copied to clipboard.");
+        }
+    }
+
+    private void DecodeAccessToken()
+    {
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var token = handler.ReadJwtToken(AccessToken);
+
+            var payload = token.Payload;
+
+            // Format header and payload as indented JSON
+
+
+            var decodedToken = JsonSerializer.Serialize(payload, new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
+
+            DecodedToken = decodedToken;
+        }
+        catch (Exception ex)
+        {
+            AccessToken = $"Error decoding token: {ex.Message}";
+        }
+    }
+}
+

@@ -1,0 +1,20 @@
+﻿@using Microsoft.AspNetCore.Identity
+
+<div class="nav-item px-3">
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="flex flex-col items-end gap-2">
+            <span>Welcome @User.Claims.FirstOrDefault(c => c.Type == "name")?.Value</span>
+            <a class="nav-link" asp-action="SignOut" asp-controller="Authorization">
+                <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Logout
+            </a>
+
+        </div>
+    }
+    else
+    {
+        <a class="nav-link" asp-action="SignIn" asp-controller="Authorization">
+            <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
+        </a>
+    }
+</div>
