@@ -4,7 +4,7 @@
     // More reliable approach to check authentication status in .NET Framework with OWIN
     var user = UserHelper.CurrentUser;
     var isAuthenticated = UserHelper.IsAuthenticated;
-    var userName =UserHelper.GetClaim("name")?? "Anonymous";
+    var userName =UserHelper.GetClaim("FullName")?? "Anonymous";
 
     // For debugging - output authentication information to the page
     var authType = Context.User.Identity?.AuthenticationType ?? "None";

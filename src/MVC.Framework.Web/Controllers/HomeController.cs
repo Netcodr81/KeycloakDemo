@@ -29,13 +29,5 @@ namespace MVC.Framework.Web.Controllers
             return View();
         }
 
-        // This is temporary for debugging purposes
-        public ActionResult SignInOidc()
-        {
-            // This is just for diagnosing the 404 issue
-            // If this action gets hit, it means ASP.NET MVC is handling the route
-            // instead of OWIN middleware
-            return Content("The signin-oidc route is being handled by MVC controller, not OWIN middleware");
-        }
     }
 }

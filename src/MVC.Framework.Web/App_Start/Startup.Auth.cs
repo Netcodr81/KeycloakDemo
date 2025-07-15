@@ -37,7 +37,6 @@ namespace MVC.Framework.Web
             {
                 AuthenticationType = CookieAuthenticationDefaults.AuthenticationType,
                 CookieHttpOnly = true,
-                CookieName = "KeycloakCookie",
                 CookieSameSite = SameSiteMode.None,
                 CookieSecure = CookieSecureOption.Always,
                 CookieDomain = "localhost",
@@ -58,8 +57,18 @@ namespace MVC.Framework.Web
                     RedeemCode = true,
                     MetadataAddress = "http://localhost:8080/realms/keycloak_demo/.well-known/openid-configuration",
                     RequireHttpsMetadata = false,
+                    PostLogoutRedirectUri = KeycloakPostLogoutRedirectUri,
                     Notifications = new OpenIdConnectAuthenticationNotifications()
                     {
+                        SecurityTokenValidated = notification =>
+                        {
+                            // Store the id_token in the authentication properties for later retrieval (logout)
+                            if (notification.ProtocolMessage.IdToken != null)
+                            {
+                                notification.AuthenticationTicket.Properties.Dictionary["id_token"] = notification.ProtocolMessage.IdToken;
+                            }
+                            return Task.FromResult(0);
+                        },
                         TokenResponseReceived = async (responseToken) =>
                         {
                             responseToken.Request.Headers.Add("Authorization", new[] { responseToken.TokenEndpointResponse.AccessToken });

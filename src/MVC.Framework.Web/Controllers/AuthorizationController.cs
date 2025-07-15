@@ -27,15 +27,13 @@ namespace MVC.Framework.Web.Controllers
             }
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
         public void SignOut()
         {
-            // To sign out, issue a sign-out challenge to both cookie and OIDC middleware.
-            HttpContext.GetOwinContext().Authentication.SignOut(
-                new AuthenticationProperties {RedirectUri = Url.Action("Index", "Home")},
-                OpenIdConnectAuthenticationDefaults.AuthenticationType,
-                CookieAuthenticationDefaults.AuthenticationType);
+
+            var authResult = HttpContext.GetOwinContext().Authentication.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationType).Result;
+            var authTypes = HttpContext.GetOwinContext().Authentication.GetAuthenticationTypes();
+
+            HttpContext.GetOwinContext().Authentication.SignOut(authTypes.Select(t => t.AuthenticationType).ToArray());
         }
 
         // This action is no longer needed with the corrected SignOut method.
@@ -49,8 +47,11 @@ namespace MVC.Framework.Web.Controllers
 
         public ActionResult Callback()
         {
+            var result = HttpContext.GetOwinContext().Authentication.AuthenticateAsync(OpenIdConnectAuthenticationDefaults.AuthenticationType).Result;
+
             var accessToken = HttpContext.Request.Headers["Authorization"];
             var refreshToken = HttpContext.Request.Headers["RefreshToken"];
+
             var decodedToken = Helper.DecodeToken(accessToken);
             var username = decodedToken.Claims.FirstOrDefault(x => x.Type == "preferred_username")?.Value;
             var fullname = decodedToken.Claims.FirstOrDefault(x => x.Type == "name")?.Value;
