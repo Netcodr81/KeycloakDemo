@@ -17,7 +17,7 @@ public class AuthorizationController : Controller
     {
         if (!this.User.Identity!.IsAuthenticated)
         {
-            return this.Challenge(OpenIdConnectDefaults.AuthenticationScheme);
+            return this.Challenge(CookieAuthenticationDefaults.AuthenticationScheme);
         }
 
         return this.RedirectToAction("Index", "Home");
@@ -28,7 +28,7 @@ public class AuthorizationController : Controller
     {
         if (!this.User.Identity!.IsAuthenticated)
         {
-            return this.Challenge(OpenIdConnectDefaults.AuthenticationScheme);
+            return this.Challenge(CookieAuthenticationDefaults.AuthenticationScheme);
         }
 
         var idToken = await this.HttpContext.GetTokenAsync("id_token");

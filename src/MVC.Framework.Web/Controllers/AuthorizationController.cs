@@ -49,24 +49,28 @@ namespace MVC.Framework.Web.Controllers
 
         public ActionResult Callback()
         {
-            //in web api: HttpContext.Current.Request.Headers
             var accessToken = HttpContext.Request.Headers["Authorization"];
             var refreshToken = HttpContext.Request.Headers["RefreshToken"];
             var decodedToken = Helper.DecodeToken(accessToken);
-            var username = decodedToken.Claims.FirstOrDefault(x => x.Type == "preferred_username").Value;
-            var fullname = decodedToken.Claims.FirstOrDefault(x => x.Type == "name").Value;
+            var username = decodedToken.Claims.FirstOrDefault(x => x.Type == "preferred_username")?.Value;
+            var fullname = decodedToken.Claims.FirstOrDefault(x => x.Type == "name")?.Value;
             var claims = new[]
             {
-                new Claim("UserName",username),
-                new Claim("FullName",fullname),
-                new Claim("AccessToken",accessToken.ToString()),
-                new Claim("RefreshToken",refreshToken.ToString()),
+                new Claim("UserName", username ?? string.Empty),
+                new Claim("FullName", fullname ?? string.Empty),
+                new Claim("AccessToken", accessToken?.ToString() ?? string.Empty),
+                new Claim("RefreshToken", refreshToken?.ToString() ?? string.Empty),
             };
 
-            var identity = new ClaimsIdentity(claims, "keycloak_sso_auth");
-
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationType);
+            var principal = new ClaimsPrincipal(identity);
+            System.Threading.Thread.CurrentPrincipal = principal;
+            if (HttpContext != null)
+            {
+                HttpContext.User = principal;
+            }
             Request.GetOwinContext().Authentication.SignIn(identity);
-            return RedirectToAction("Index","Home");
+            return RedirectToAction("Index", "Home");
         }
 
     }

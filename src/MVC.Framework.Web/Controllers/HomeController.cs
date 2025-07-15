@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.EnterpriseServices;
 using System.Linq;
+using System.Security.Claims;
 using System.Web;
 using System.Web.Mvc;
 
@@ -11,7 +12,9 @@ namespace MVC.Framework.Web.Controllers
     {
         public ActionResult Index()
         {
-            return View();
+            ViewBag.Message = "Claims : ";
+            var principle = User as ClaimsPrincipal;
+            return View(principle);
         }
 
         public ActionResult About()
