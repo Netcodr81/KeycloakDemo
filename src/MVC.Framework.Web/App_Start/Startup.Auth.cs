@@ -35,32 +35,38 @@ namespace MVC.Framework.Web
             // Enable the application to use a cookie to store information for the signed in user
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
-                CookieManager = new SystemWebChunkingCookieManager()
+                AuthenticationType = CookieAuthenticationDefaults.AuthenticationType,
+                CookieHttpOnly = true,
+                CookieName = "KeycloakCookie",
+                CookieSameSite = SameSiteMode.None,
+                CookieSecure = CookieSecureOption.Always,
+                CookieDomain = "localhost",
+                CookiePath = "/",
+
             });
 
             app.UseOpenIdConnectAuthentication(
                 new OpenIdConnectAuthenticationOptions
                 {
-                    ClientId = KeycloakClientId,
-                    PostLogoutRedirectUri = KeycloakPostLogoutRedirectUri,
-                    RedirectUri = KeycloakRedirectUri,
-                    CookieManager = new SystemWebCookieManager(),
-                    ClientSecret = KeycloakClientSecret,
                     Authority = KeycloakAuthority,
-                    Scope = "openid profile email",
+                    ClientId = KeycloakClientId,
+                    ClientSecret = KeycloakClientSecret,
                     ResponseType = OpenIdConnectResponseType.Code,
-                    SignInAsAuthenticationType = "Cookies",
+                    SaveTokens = true,
+                    Scope = "openid profile email",
+                    RedirectUri = KeycloakRedirectUri,
+                    RedeemCode = true,
                     MetadataAddress = "http://localhost:8080/realms/keycloak_demo/.well-known/openid-configuration",
                     RequireHttpsMetadata = false,
-                    RedeemCode = true,
                     Notifications = new OpenIdConnectAuthenticationNotifications()
                     {
-                        SecurityTokenValidated = (context) =>
+                        TokenResponseReceived = async (responseToken) =>
                         {
-                            string name = context.AuthenticationTicket.Identity.Name;
-                            context.AuthenticationTicket.Identity.AddClaim(new Claim("name", name));
-                            return Task.FromResult(0);
-                        }
+                            responseToken.Request.Headers.Add("Authorization", new[] { responseToken.TokenEndpointResponse.AccessToken });
+                            responseToken.Request.Headers.Add("RefreshToken", new[] { responseToken.TokenEndpointResponse.RefreshToken });
+
+                            responseToken.SkipToNextMiddleware();
+                        },
                     }
                 });
 

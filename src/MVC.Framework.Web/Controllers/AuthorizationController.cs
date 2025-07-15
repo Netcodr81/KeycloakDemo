@@ -1,8 +1,11 @@
-﻿using System.Web;
+﻿using System.Linq;
+using System.Security.Claims;
+using System.Web;
 using System.Web.Mvc;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.OpenIdConnect;
+using MVC.Framework.Web.Helpers;
 
 namespace MVC.Framework.Web.Controllers
 {
@@ -42,6 +45,28 @@ namespace MVC.Framework.Web.Controllers
         public ActionResult AccessDenied()
         {
             return View();
+        }
+
+        public ActionResult Callback()
+        {
+            //in web api: HttpContext.Current.Request.Headers
+            var accessToken = HttpContext.Request.Headers["Authorization"];
+            var refreshToken = HttpContext.Request.Headers["RefreshToken"];
+            var decodedToken = Helper.DecodeToken(accessToken);
+            var username = decodedToken.Claims.FirstOrDefault(x => x.Type == "preferred_username").Value;
+            var fullname = decodedToken.Claims.FirstOrDefault(x => x.Type == "name").Value;
+            var claims = new[]
+            {
+                new Claim("UserName",username),
+                new Claim("FullName",fullname),
+                new Claim("AccessToken",accessToken.ToString()),
+                new Claim("RefreshToken",refreshToken.ToString()),
+            };
+
+            var identity = new ClaimsIdentity(claims, "keycloak_sso_auth");
+
+            Request.GetOwinContext().Authentication.SignIn(identity);
+            return RedirectToAction("Index","Home");
         }
 
     }
