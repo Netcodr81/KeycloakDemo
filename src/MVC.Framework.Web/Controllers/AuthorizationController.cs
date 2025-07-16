@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Configuration;
+using System.Linq;
 using System.Security.Claims;
 using System.Web;
 using System.Web.Mvc;
@@ -31,9 +32,31 @@ namespace MVC.Framework.Web.Controllers
         {
 
             var authResult = HttpContext.GetOwinContext().Authentication.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationType).Result;
-            var authTypes = HttpContext.GetOwinContext().Authentication.GetAuthenticationTypes();
 
-            HttpContext.GetOwinContext().Authentication.SignOut(authTypes.Select(t => t.AuthenticationType).ToArray());
+            // Retrieve the ID token
+            var idToken = authResult?.Identity?.Claims
+                .FirstOrDefault(c => c.Type == "id_token")?.Value;
+
+            // Get Keycloak configuration
+            var realm = ConfigurationManager.AppSettings["Keycloak:Realm"];
+            var authority = ConfigurationManager.AppSettings["Keycloak:Authority"];
+            var postLogoutRedirectUri = ConfigurationManager.AppSettings["Keycloak:PostLogoutRedirectUri"];
+
+            // Construct the logout URL manually
+            var logoutUrl = $"http://localhost:8080/realms/keycloak_demo/protocol/openid-connect/logout" +
+                            $"?id_token_hint={HttpUtility.UrlEncode(idToken)}" +
+                            $"&post_logout_redirect_uri={HttpUtility.UrlEncode(postLogoutRedirectUri)}";
+
+            // Clear local authentication
+            HttpContext.GetOwinContext().Authentication.SignOut(
+                CookieAuthenticationDefaults.AuthenticationType,
+                OpenIdConnectAuthenticationDefaults.AuthenticationType
+            );
+
+            // Redirect to the constructed logout URL
+            Response.Redirect(logoutUrl);
+
+
         }
 
         // This action is no longer needed with the corrected SignOut method.
@@ -47,31 +70,8 @@ namespace MVC.Framework.Web.Controllers
 
         public ActionResult Callback()
         {
-            var result = HttpContext.GetOwinContext().Authentication.AuthenticateAsync(OpenIdConnectAuthenticationDefaults.AuthenticationType).Result;
-
-            var accessToken = HttpContext.Request.Headers["Authorization"];
-            var refreshToken = HttpContext.Request.Headers["RefreshToken"];
-
-            var decodedToken = Helper.DecodeToken(accessToken);
-            var username = decodedToken.Claims.FirstOrDefault(x => x.Type == "preferred_username")?.Value;
-            var fullname = decodedToken.Claims.FirstOrDefault(x => x.Type == "name")?.Value;
-            var claims = new[]
-            {
-                new Claim("UserName", username ?? string.Empty),
-                new Claim("FullName", fullname ?? string.Empty),
-                new Claim("AccessToken", accessToken?.ToString() ?? string.Empty),
-                new Claim("RefreshToken", refreshToken?.ToString() ?? string.Empty),
-            };
-
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationType);
-            var principal = new ClaimsPrincipal(identity);
-            System.Threading.Thread.CurrentPrincipal = principal;
-            if (HttpContext != null)
-            {
-                HttpContext.User = principal;
-            }
-            Request.GetOwinContext().Authentication.SignIn(identity);
             return RedirectToAction("Index", "Home");
+
         }
 
     }
