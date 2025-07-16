@@ -54,7 +54,7 @@ namespace MVC.Framework.Web
                     ClientSecret = KeycloakClientSecret,
                     ResponseType = OpenIdConnectResponseType.Code,
                     SaveTokens = true,
-                    Scope = "openid profile email",
+                    Scope = "openid profile email offline_access",
                     RedirectUri = KeycloakRedirectUri,
                     RedeemCode = true,
                     MetadataAddress = "http://localhost:8080/realms/keycloak_demo/.well-known/openid-configuration",

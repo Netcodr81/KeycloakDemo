@@ -59,8 +59,6 @@ namespace MVC.Framework.Web.Controllers
 
         }
 
-        // This action is no longer needed with the corrected SignOut method.
-        // public ActionResult SignOutCallback() { ... }
 
         [AllowAnonymous]
         public ActionResult AccessDenied()
@@ -68,11 +66,6 @@ namespace MVC.Framework.Web.Controllers
             return View();
         }
 
-        public ActionResult Callback()
-        {
-            return RedirectToAction("Index", "Home");
-
-        }
 
     }
 }

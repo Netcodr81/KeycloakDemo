@@ -1,31 +1,126 @@
-﻿using System.Linq;
+﻿using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
+using System.Text.Json;
+using System.Threading.Tasks;
 using System.Web.Mvc;
+using MVC.Framework.Web.Authentication;
+using MVC.Framework.Web.Helpers;
+using MVC.Framework.Web.Models;
 
 namespace MVC.Framework.Web.Controllers
 {
     [Authorize]
     public class UserController : Controller
     {
+
+    private readonly ITokenService _tokenService;
+
+        public UserController(ITokenService tokenService)
+        {
+            _tokenService = tokenService;
+        }
+
         // GET
         public ActionResult UserInfo()
         {
-            var identity = User.Identity as ClaimsIdentity;
+            ViewData["AccessTokenModel"] = new AccessTokenViewModel();
+            ViewData["ClaimsPanelModel"] = new ClaimsPanelViewModel();
 
-            if (identity == null)
+            // Initialize RefreshTokenViewModel with data from the current access token if available
+            var refreshTokenModel = new RefreshTokenViewModel();
+            var accessToken = UserHelper.GetClaim("access_token");
+            if (!string.IsNullOrEmpty(accessToken))
             {
-                return new HttpUnauthorizedResult();
+                refreshTokenModel = RefreshTokenViewModel.FromAccessToken(accessToken);
             }
 
-            // Get all claims for the current user
-            var claims = identity.Claims.Select(c => new { Type = c.Type, Value = c.Value }).ToList();
-
-            ViewBag.Claims = claims;
-            ViewBag.Name = identity.FindFirst(ClaimTypes.Name)?.Value ?? "Unknown";
-            ViewBag.Email = identity.FindFirst(ClaimTypes.Email)?.Value;
-            ViewBag.Roles = identity.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+            ViewData["RefreshTokenModel"] = refreshTokenModel;
 
             return View();
         }
+
+
+
+    [HttpPost]
+    public async Task<ActionResult> ShowAccessToken()
+    {
+        var accessToken = UserHelper.GetClaim("access_token");
+        return Json(new { accessToken });
+    }
+
+    [HttpPost]
+    public ActionResult DecodeAccessToken(string accessToken)
+    {
+
+        var handler = new JwtSecurityTokenHandler();
+        var jsonToken = handler.ReadToken(accessToken) as JwtSecurityToken;
+
+        var jsonDoc = JsonDocument.Parse(jsonToken.Payload.SerializeToJson());
+        var formattedJson = JsonSerializer.Serialize(jsonDoc, new JsonSerializerOptions { WriteIndented = true });
+
+        return Json(new { decodedToken = formattedJson });
+    }
+
+    [HttpPost]
+    public ActionResult ClearAccessToken()
+    {
+        return Json("");
+    }
+
+
+
+    [HttpPost]
+    public ActionResult ShowClaims()
+    {
+
+        var user = User as ClaimsPrincipal;
+        var claims = user?.Claims.Select(c => new { type = c.Type, value = c.Value }).ToList();
+        return Json(claims);
+    }
+
+    [HttpPost]
+    public ActionResult ClearClaims()
+    {
+        return Json("");
+    }
+
+
+
+    [HttpPost]
+    public async Task<ActionResult> RefreshToken()
+    {
+        try
+        {
+            var success = await _tokenService.RefreshTokenAsync();
+
+            if (success)
+            {
+                // After successful refresh, redirect to force a reload
+                TempData["SuccessMessage"] = "Token refreshed successfully";
+                return RedirectToAction("UserInfo");
+            }
+            else
+            {
+
+                TempData["ErrorMessage"] = $"Failed to refresh token";
+            }
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = $"Error refreshing token: {ex.Message}";
+        }
+
+        var accessToken = UserHelper.GetClaim("access_token");
+
+        ViewData["AccessTokenModel"] = new AccessTokenViewModel();
+        ViewData["ClaimsPanelModel"] = new ClaimsPanelViewModel();
+        ViewData["RefreshTokenModel"] = RefreshTokenViewModel.FromAccessToken(accessToken);
+
+        return View("UserInfo");
+    }
+
+
     }
 }
