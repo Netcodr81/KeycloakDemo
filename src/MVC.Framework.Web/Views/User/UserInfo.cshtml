@@ -8,9 +8,11 @@
 
 <h3 class="text-2xl mb-4">User Information</h3>
 <div class="flex flex-col gap-6">
-    @Html.Partial("Partials/_RefreshTokenPanel", refreshTokenModel)
-    @Html.Partial("Partials/_ClaimsPanel", claimsPanelModel)
-    @Html.Partial("Partials/_AccessTokenPanel", accessTokenPanelModel)
+    @{ Html.RenderPartial("./Partials/_RefreshTokenPanel", refreshTokenModel); }
+    @{
+        Html.RenderPartial("./Partials/_ClaimsPanel", claimsPanelModel);
+    }
+    @{ Html.RenderPartial("./Partials/_AccessTokenPanel", accessTokenPanelModel); }
 </div>
 
 @if (TempData["SuccessMessage"] != null)
