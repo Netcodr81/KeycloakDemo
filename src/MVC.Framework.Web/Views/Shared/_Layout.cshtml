@@ -51,7 +51,7 @@
                         <div class="h-9 w-9 bg-primary rounded-lg flex items-center justify-center">
                             <span class="text-primary-content font-bold text-lg">M</span>
                         </div>
-                        <span class="text-xl font-display font-semibold">MVC Interactive Server</span>
+                        <span class="text-xl font-display font-semibold">MVC Framework</span>
                     </div>
                 </a>
             </div>
@@ -97,13 +97,13 @@
                 </div>
                 <div class="menu bg-base-100 p-0">
                     <a href="@Url.Action("Index", "Home")"
-                       class="btn btn-ghost justify-start @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active-link" : "")">
+                       class="btn btn-ghost justify-start @(Request.Path.ToString().EndsWith("/") || Request.Path.ToString().EndsWith("/Home/Index") ? "active-link" : "")">
                         Home
                     </a>
                     @if (isAuthenticated)
                     {
                         <a href="@Url.Action("UserInfo", "User")"
-                           class="btn btn-ghost justify-start @(ViewContext.RouteData.Values["Action"]?.ToString() == "UserInfo" ? "active-link" : "")">
+                           class="btn btn-ghost justify-start @(Request.Path.ToString().EndsWith("/User/UserInfo") ? "active-link" : "")">
                             User Information
                         </a>
                     }
@@ -122,7 +122,7 @@
                     <ul>
                         <li>
                             <a href="@Url.Action("Index", "Home")"
-                               class="rounded-btn @(ViewContext.RouteData.Values["Action"]?.ToString() == "UserInfo" ? "active-link" : "")">
+                               class="rounded-btn @(Request.Path.ToString().EndsWith("/") || Request.Path.ToString().EndsWith("/Home/Index") ? "active-link" : "")">
                                 Home
                             </a>
                         </li>
@@ -130,7 +130,7 @@
                         {
                             <li>
                                 <a href="@Url.Action("UserInfo", "User")"
-                                   class="rounded-btn @(ViewContext.RouteData.Values["Action"]?.ToString() == "UserInfo" ? "active-link" : "")">
+                                   class="rounded-btn @(Request.Path.ToString().EndsWith("/User/UserInfo") ? "active-link" : "")">
                                     User Information
                                 </a>
                             </li>
