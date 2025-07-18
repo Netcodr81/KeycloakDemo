@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -77,13 +78,14 @@ namespace MVC.Framework.Web.Controllers
 
         var user = User as ClaimsPrincipal;
         var claims = user?.Claims.Select(c => new { type = c.Type, value = c.Value }).ToList();
-        return Json(claims);
+        var viewModelClaims = user.Claims.ToList();
+        return PartialView("Shared/_UserClaimsPanel", new ClaimsPanelViewModel {Claims =viewModelClaims});
     }
 
     [HttpPost]
     public ActionResult ClearClaims()
     {
-        return Json("");
+        return PartialView("Shared/_UserClaimsPanel", new ClaimsPanelViewModel());
     }
 
 
@@ -99,7 +101,9 @@ namespace MVC.Framework.Web.Controllers
             {
                 // After successful refresh, redirect to force a reload
                 TempData["SuccessMessage"] = "Token refreshed successfully";
-                return RedirectToAction("UserInfo");
+                var accessToken = UserHelper.GetClaim("access_token");
+
+                return View("Shared/_RefreshTokenPanel", RefreshTokenViewModel.FromAccessToken(accessToken));
             }
             else
             {
@@ -112,13 +116,8 @@ namespace MVC.Framework.Web.Controllers
             TempData["ErrorMessage"] = $"Error refreshing token: {ex.Message}";
         }
 
-        var accessToken = UserHelper.GetClaim("access_token");
-
-        ViewData["AccessTokenModel"] = new AccessTokenViewModel();
-        ViewData["ClaimsPanelModel"] = new ClaimsPanelViewModel();
-        ViewData["RefreshTokenModel"] = RefreshTokenViewModel.FromAccessToken(accessToken);
-
-        return View("UserInfo");
+        var oldAccessToken = UserHelper.GetClaim("access_token");
+        return View("Shared/_RefreshTokenPanel", RefreshTokenViewModel.FromAccessToken(oldAccessToken));
     }
 
 
