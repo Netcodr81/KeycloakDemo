@@ -1,6 +1,8 @@
 using Blazor.Web;
 using Blazor.Web.Authentication;
 using Blazor.Web.Components;
+// Keep both imports available (commented one is original)
+using Keycloak.AuthServices.Authentication;
 using Keycloak.AuthServices.Authorization;
 using Keycloak.AuthServices.Authorization.AuthorizationServer;
 using Microsoft.AspNetCore.Authentication;
@@ -8,9 +10,12 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+
 using TokenHandler = Blazor.Web.Authentication.TokenHandler;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();

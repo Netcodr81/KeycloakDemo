@@ -1,7 +1,10 @@
-﻿using Keycloak.AuthServices.Authentication;
+﻿using System.Security.Claims;
+using Keycloak.AuthServices.Authentication;
 using Keycloak.AuthServices.Authorization;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Blazor.Web;
 

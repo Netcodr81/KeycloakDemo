@@ -6,27 +6,19 @@
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
-
     <ItemGroup>
-        <PackageReference Include="Keycloak.AuthServices.Authentication" Version="2.6.1" />
-        <PackageReference Include="Keycloak.AuthServices.Authorization" Version="2.6.1" />
-        <PackageReference Include="Keycloak.AuthServices.Common" Version="2.6.1" />
-        <PackageReference Include="Keycloak.AuthServices.Sdk" Version="2.6.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="9.0.6" />
+      <PackageReference Include="Keycloak.AuthServices.Authentication" Version="2.6.1" />
+      <PackageReference Include="Keycloak.AuthServices.Authorization" Version="2.6.1" />
+      <PackageReference Include="Keycloak.AuthServices.Common" Version="2.6.1" />
+      <PackageReference Include="Keycloak.AuthServices.Sdk" Version="2.6.1" />
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="9.0.6" />
     </ItemGroup>
 
-
     <ItemGroup>
-      <_ContentIncludedByDefault Remove="Components\Layout\MainLayout.razor" />
-      <_ContentIncludedByDefault Remove="Components\Layout\NavMenu.razor" />
-      <_ContentIncludedByDefault Remove="Components\Pages\Counter.razor" />
-      <_ContentIncludedByDefault Remove="Components\Pages\Error.razor" />
-      <_ContentIncludedByDefault Remove="Components\Pages\Home.razor" />
-      <_ContentIncludedByDefault Remove="Components\Pages\Weather.razor" />
+      <AdditionalFiles Include="Features\Layout\LogInOrOut.razor" />
+      <AdditionalFiles Include="Features\Layout\MainLayout.razor" />
+      <AdditionalFiles Include="Features\Layout\NavMenu.razor" />
+      <AdditionalFiles Include="Features\Layout\RedirectToLogin.razor" />
     </ItemGroup>
 
-
-    <ItemGroup>
-      <Folder Include="wwwroot\css\" />
-    </ItemGroup>
 </Project>

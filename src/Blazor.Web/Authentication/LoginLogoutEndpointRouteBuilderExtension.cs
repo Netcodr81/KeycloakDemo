@@ -7,16 +7,14 @@ namespace Blazor.Web.Authentication;
 
 internal static class LoginLogoutEndpointRouteBuilderExtensions
 {
-     internal static IEndpointConventionBuilder MapLoginAndLogout(this IEndpointRouteBuilder endpoints)
+    internal static IEndpointConventionBuilder MapLoginAndLogout(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints.MapGroup("");
 
-        // Pass HttpContext to the handler to build the absolute URL
-        group.MapGet("/login", (string? returnUrl, HttpContext context) => TypedResults.Challenge(GetAuthProperties(context, returnUrl)))
+        group.MapGet("/login", (string? returnUrl) => TypedResults.Challenge(GetAuthProperties(returnUrl)))
             .AllowAnonymous();
 
-        // Pass HttpContext for the logout redirect as well
-        group.MapPost("/logout", ([FromForm] string? returnUrl, HttpContext context) => TypedResults.SignOut(GetAuthProperties(context, returnUrl),
+        group.MapPost("/logout", ([FromForm] string? returnUrl) => TypedResults.SignOut(GetAuthProperties(returnUrl),
             [CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme]));
 
         // This endpoint will now be reachable for your manual refresh button.
@@ -43,27 +41,23 @@ internal static class LoginLogoutEndpointRouteBuilderExtensions
         return group;
     }
 
-    // Updated GetAuthProperties to accept HttpContext and build an absolute RedirectUri
-    private static AuthenticationProperties GetAuthProperties(HttpContext context, string? returnUrl)
+    private static AuthenticationProperties GetAuthProperties(string? returnUrl)
     {
         const string pathBase = "/";
-        var redirectPath = pathBase;
 
-        if (!string.IsNullOrEmpty(returnUrl))
+        if (string.IsNullOrEmpty(returnUrl))
         {
-            // Sanitize the returnUrl to ensure it's a relative path within the app
-            redirectPath = Uri.IsWellFormedUriString(returnUrl, UriKind.Absolute)
-                ? new Uri(returnUrl, UriKind.Absolute).PathAndQuery
-                : returnUrl;
+            returnUrl = pathBase;
+        }
+        else if (!Uri.IsWellFormedUriString(returnUrl, UriKind.Relative))
+        {
+            returnUrl = new Uri(returnUrl, UriKind.Absolute).PathAndQuery;
+        }
+        else if (returnUrl[0] != '/')
+        {
+            returnUrl = $"{pathBase}{returnUrl}";
         }
 
-        if (redirectPath[0] != '/')
-        {
-            redirectPath = $"{pathBase}{redirectPath}";
-        }
-
-        // Construct the absolute URI for the OIDC provider
-        var absoluteUrl = $"{context.Request.Scheme}://{context.Request.Host}{redirectPath}";
-        return new AuthenticationProperties { RedirectUri = absoluteUrl };
+        return new AuthenticationProperties {RedirectUri = returnUrl};
     }
 }
