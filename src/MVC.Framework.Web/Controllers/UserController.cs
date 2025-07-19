@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
 using MVC.Framework.Web.Authentication;
 using MVC.Framework.Web.Helpers;
@@ -101,9 +102,12 @@ namespace MVC.Framework.Web.Controllers
             {
                 // After successful refresh, redirect to force a reload
                 TempData["SuccessMessage"] = "Token refreshed successfully";
+
+                var user = HttpContext.GetOwinContext().Authentication.User.Identity;
                 var accessToken = UserHelper.GetClaim("access_token");
 
-                return View("Shared/_RefreshTokenPanel", RefreshTokenViewModel.FromAccessToken(accessToken));
+
+                return PartialView("Shared/_RefreshTokenPanel", RefreshTokenViewModel.FromAccessToken(accessToken));
             }
             else
             {
@@ -117,7 +121,7 @@ namespace MVC.Framework.Web.Controllers
         }
 
         var oldAccessToken = UserHelper.GetClaim("access_token");
-        return View("Shared/_RefreshTokenPanel", RefreshTokenViewModel.FromAccessToken(oldAccessToken));
+        return PartialView("Shared/_RefreshTokenPanel", RefreshTokenViewModel.FromAccessToken(oldAccessToken));
     }
 
 

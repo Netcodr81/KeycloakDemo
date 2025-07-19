@@ -4,11 +4,13 @@ using System.Configuration;
 using System.Globalization;
 using System.Net.Http;
 using System.Runtime.Serialization;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.OpenIdConnect;
+using MVC.Framework.Web.Helpers;
 using Newtonsoft.Json;
 
 namespace MVC.Framework.Web.Authentication
@@ -36,6 +38,7 @@ namespace MVC.Framework.Web.Authentication
                 // Get the authentication manager from OWIN context
                 var authManager = context.GetOwinContext().Authentication;
                 var authResult = authManager.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationType).Result;
+                var user = context.GetOwinContext().Authentication.User.Identity;
 
                 if (authResult == null || !authResult.Identity.IsAuthenticated)
                 {
@@ -43,9 +46,7 @@ namespace MVC.Framework.Web.Authentication
                 }
 
                 // Get refresh token from authentication properties
-                var refreshToken = authResult.Properties.Dictionary.ContainsKey(".Token.refresh_token")
-                    ? authResult.Properties.Dictionary[".Token.refresh_token"]
-                    : null;
+                var refreshToken = UserHelper.GetClaim("refresh_token");
 
                 if (string.IsNullOrEmpty(refreshToken))
                 {
@@ -54,10 +55,7 @@ namespace MVC.Framework.Web.Authentication
 
                 // Get token endpoint from configuration
                 var tokenEndpoint = ConfigurationManager.AppSettings["Keycloak:TokenEndpoint"];
-                if (string.IsNullOrEmpty(tokenEndpoint))
-                {
-                    tokenEndpoint = $"{ConfigurationManager.AppSettings["Keycloak:Authority"]}/protocol/openid-connect/token";
-                }
+
 
                 // Prepare the token refresh request
                 var content = new FormUrlEncodedContent(new Dictionary<string, string>
@@ -108,7 +106,15 @@ namespace MVC.Framework.Web.Authentication
                 }
 
                 // Sign in the user with the updated tokens
-                authManager.SignIn(properties, authResult.Identity);
+
+                //authManager.SignIn(properties, authResult.Identity);
+                HttpContext.Current.GetOwinContext().Authentication.SignIn(new AuthenticationProperties
+                {
+                    IsPersistent = true,
+                    AllowRefresh = true,
+                    ExpiresUtc = DateTime.UtcNow.AddSeconds(tokenResponse.ExpiresIn)
+                }, authResult.Identity);
+
 
                 return true;
             }

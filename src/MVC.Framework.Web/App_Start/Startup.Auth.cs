@@ -4,10 +4,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNet.Identity;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.Owin;
 using Microsoft.Owin.Host.SystemWeb;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Cookies;
@@ -17,6 +17,7 @@ using MVC.Framework.Web.Helpers;
 using Newtonsoft.Json.Linq;
 using Owin;
 using Owin.Security.Keycloak;
+using SameSiteMode = Microsoft.Owin.SameSiteMode;
 
 namespace MVC.Framework.Web
 {
@@ -60,6 +61,7 @@ namespace MVC.Framework.Web
                     MetadataAddress = "http://localhost:8080/realms/keycloak_demo/.well-known/openid-configuration",
                     RequireHttpsMetadata = false,
                     PostLogoutRedirectUri = KeycloakPostLogoutRedirectUri,
+                    UseTokenLifetime = false,
                     ProtocolValidator = new OpenIdConnectProtocolValidator
                     {
                         RequireNonce = false,
@@ -73,6 +75,9 @@ namespace MVC.Framework.Web
 
                         SecurityTokenValidated = context =>
                         {
+                            context.AuthenticationTicket.Properties.AllowRefresh = true;
+                            context.AuthenticationTicket.Properties.IsPersistent = true;
+
                             var identity = context.AuthenticationTicket.Identity;
 
                             // Extract tokens from the protocol message
@@ -98,12 +103,11 @@ namespace MVC.Framework.Web
 
                             identity.AddClaim(new Claim("UserName", username ?? string.Empty));
                             identity.AddClaim(new Claim("FullName", fullname ?? string.Empty));
-                            identity.AddClaim(new Claim("AccessToken", accessToken ?? string.Empty));
-                            identity.AddClaim(new Claim("RefreshToken", refreshToken ?? string.Empty));
+                           // identity.AddClaim(new Claim("AccessToken", accessToken ?? string.Empty));
+                           identity.AddClaim(new Claim("refresh_token", refreshToken ?? string.Empty));
 
                             return Task.CompletedTask;
                         }
-
                     }
                 });
 
