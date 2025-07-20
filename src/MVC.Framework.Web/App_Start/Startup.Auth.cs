@@ -113,41 +113,6 @@ namespace MVC.Framework.Web
 
         }
 
-        private void MapKeycloakClaimsToIdentity(ClaimsIdentity identity, SecurityTokenValidatedNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions> notification)
-        {
-            // Mapping Keycloak claims to standard claims
-            var nameClaim = identity.FindFirst("preferred_username") ?? identity.FindFirst("name");
-            if (nameClaim != null)
-            {
-                identity.AddClaim(new Claim(ClaimTypes.Name, nameClaim.Value));
-            }
 
-            var emailClaim = identity.FindFirst("email");
-            if (emailClaim != null)
-            {
-                identity.AddClaim(new Claim(ClaimTypes.Email, emailClaim.Value));
-            }
-
-            var userIdClaim = identity.FindFirst("sub");
-            if (userIdClaim != null)
-            {
-                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, userIdClaim.Value));
-            }
-        }
-
-        private static string EnsureTrailingSlash(string value)
-        {
-            if (value == null)
-            {
-                value = string.Empty;
-            }
-
-            if (!value.EndsWith("/", StringComparison.Ordinal))
-            {
-                return value + "/";
-            }
-
-            return value;
-        }
     }
 }

@@ -112,23 +112,7 @@ namespace MVC.Framework.Web.Authentication
 
         public Task<string> GetAccessTokenAsync()
         {
-            var context = HttpContext.Current;
-            if (context == null)
-            {
-                return Task.FromResult<string>(null);
-            }
-
-            var authManager = context.GetOwinContext().Authentication;
-            var authResult = authManager.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationType).Result;
-
-            if (authResult == null || !authResult.Identity.IsAuthenticated)
-            {
-                return Task.FromResult<string>(null);
-            }
-
-            var accessToken = authResult.Properties.Dictionary.ContainsKey(".Token.access_token")
-                ? authResult.Properties.Dictionary[".Token.access_token"]
-                : null;
+            var accessToken = UserHelper.GetClaim("access_token");
 
             return Task.FromResult(accessToken);
         }

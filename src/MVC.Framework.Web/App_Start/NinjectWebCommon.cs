@@ -45,7 +45,7 @@ namespace MVC.Framework.Web
             {
                 kernel.Bind<Func<IKernel>>().ToMethod(ctx => () => new Bootstrapper().Kernel);
                 kernel.Bind<IHttpModule>().To<HttpApplicationInitializationHttpModule>();
-                kernel.Bind<ITokenService>().To<KeycloakTokenService>();
+                kernel.Bind<ITokenService>().To<KeycloakTokenService>().InRequestScope();
                 RegisterServices(kernel);
                 return kernel;
             }
