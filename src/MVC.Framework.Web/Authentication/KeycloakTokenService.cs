@@ -35,18 +35,10 @@ namespace MVC.Framework.Web.Authentication
                     return false;
                 }
 
-                // Get the authentication manager from OWIN context
-                var authManager = context.GetOwinContext().Authentication;
-                var authResult = authManager.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationType).Result;
-                var user = context.GetOwinContext().Authentication.User.Identity;
-
-                if (authResult == null || !authResult.Identity.IsAuthenticated)
-                {
-                    return false;
-                }
-
                 // Get refresh token from authentication properties
                 var refreshToken = UserHelper.GetClaim("refresh_token");
+                var currentAccessToken = UserHelper.GetClaim("access_token");
+                var idToken = UserHelper.GetClaim("id_token");
 
                 if (string.IsNullOrEmpty(refreshToken))
                 {
@@ -80,41 +72,35 @@ namespace MVC.Framework.Web.Authentication
                     return false;
                 }
 
-                // Update the tokens in the authentication ticket
-                var properties = authResult.Properties;
 
-                // Update token values
-                if (properties.Dictionary.ContainsKey(".Token.access_token"))
-                    properties.Dictionary[".Token.access_token"] = tokenResponse.AccessToken;
-                else
-                    properties.Dictionary.Add(".Token.access_token", tokenResponse.AccessToken);
+                var claimsIdentity = HttpContext.Current.User.Identity as ClaimsIdentity;
+                var refreshTokenClaim = claimsIdentity.FindFirst("refresh_token");
+                var accessTokenClaim = claimsIdentity.FindFirst("access_token");
+                var idTokenClaim = claimsIdentity.FindFirst("id_token");
+                var accessTokenExpirationClaim =  claimsIdentity.FindFirst("exp");
 
-                if (properties.Dictionary.ContainsKey(".Token.refresh_token"))
-                    properties.Dictionary[".Token.refresh_token"] = tokenResponse.RefreshToken;
-                else
-                    properties.Dictionary.Add(".Token.refresh_token", tokenResponse.RefreshToken);
+                claimsIdentity.RemoveClaim(refreshTokenClaim);
+                claimsIdentity.AddClaim(new Claim("refresh_token", tokenResponse.RefreshToken));
 
-                if (tokenResponse.ExpiresIn > 0)
-                {
-                    var expiresAt = DateTime.UtcNow.AddSeconds(tokenResponse.ExpiresIn);
-                    var expiresAtString = expiresAt.ToString("o", CultureInfo.InvariantCulture);
+                claimsIdentity.RemoveClaim(accessTokenClaim);
+                claimsIdentity.AddClaim(new Claim("access_token", tokenResponse.AccessToken));
 
-                    if (properties.Dictionary.ContainsKey(".Token.expires_at"))
-                        properties.Dictionary[".Token.expires_at"] = expiresAtString;
-                    else
-                        properties.Dictionary.Add(".Token.expires_at", expiresAtString);
-                }
+                claimsIdentity.RemoveClaim(idTokenClaim);
+                claimsIdentity.AddClaim(new Claim("id_token", tokenResponse.IdToken));
+
+                claimsIdentity.RemoveClaim(accessTokenExpirationClaim);
+                var newAccessTokenExpirationDate = DateTime.Now.AddSeconds(tokenResponse.ExpiresIn);
+                claimsIdentity.AddClaim(new Claim("exp", newAccessTokenExpirationDate.ToString("o")));
+
 
                 // Sign in the user with the updated tokens
 
-                //authManager.SignIn(properties, authResult.Identity);
                 HttpContext.Current.GetOwinContext().Authentication.SignIn(new AuthenticationProperties
                 {
                     IsPersistent = true,
                     AllowRefresh = true,
                     ExpiresUtc = DateTime.UtcNow.AddSeconds(tokenResponse.ExpiresIn)
-                }, authResult.Identity);
-
+                }, claimsIdentity);
 
                 return true;
             }
@@ -146,6 +132,8 @@ namespace MVC.Framework.Web.Authentication
 
             return Task.FromResult(accessToken);
         }
+
+
     }
 
     [DataContract]
@@ -156,6 +144,9 @@ namespace MVC.Framework.Web.Authentication
 
         [DataMember(Name = "refresh_token")]
         public string RefreshToken { get; set; }
+
+        [DataMember(Name = "id_token")]
+        public string IdToken { get; set; }
 
         [DataMember(Name = "expires_in")]
         public int ExpiresIn { get; set; }

@@ -103,11 +103,7 @@ namespace MVC.Framework.Web.Controllers
                 // After successful refresh, redirect to force a reload
                 TempData["SuccessMessage"] = "Token refreshed successfully";
 
-                var user = HttpContext.GetOwinContext().Authentication.User.Identity;
-                var accessToken = UserHelper.GetClaim("access_token");
-
-
-                return PartialView("Shared/_RefreshTokenPanel", RefreshTokenViewModel.FromAccessToken(accessToken));
+                return RedirectToAction("UserInfo", "User");
             }
             else
             {
