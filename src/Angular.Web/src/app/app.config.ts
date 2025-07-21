@@ -14,7 +14,7 @@ import {routes} from './app.routes';
 import {HTTP_INTERCEPTORS, provideHttpClient, withInterceptors} from '@angular/common/http';
 
 const urlCondition = createInterceptorCondition<IncludeBearerTokenCondition>({
-  urlPattern: /^(http:\/\/localhost:8181)(\/.*)?$/i,
+  urlPattern: /^(http:\/\/localhost:8080)(\/.*)?$/i,
   bearerPrefix: 'Bearer'
 });
 

@@ -33,16 +33,19 @@ export class RefreshTokenPanelComponent implements OnInit {
   }
 
   public refreshToken(): void {
-    this.http.post('/authentication/api/refresh-token', null).subscribe({
-      next: () => {
-        alert('Token refreshed successfully via manual button.');
-        window.location.reload();
-      },
-      error: async (err) => {
-        const errorContent = err.error instanceof Blob ? await err.error.text() : JSON.stringify(err.error);
+    this.keycloak.updateToken(999999)
+      .then((refreshed: boolean) => {
+        if (refreshed) {
+          alert('Token refreshed successfully via manual button.');
+          window.location.reload();
+        } else {
+          alert('Token is still valid, not refreshed.');
+        }
+      })
+      .catch(async (err) => {
+        const errorContent = err?.error instanceof Blob ? await err.error.text() : JSON.stringify(err?.error ?? err);
         alert(`Failed to refresh token. Server responded with: ${errorContent}`);
-      }
-    });
+      });
   }
 
   private getClaimAsDate(payload: any, claimType: string): Date | null {
