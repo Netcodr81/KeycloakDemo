@@ -1,6 +1,6 @@
 import {Component, inject, OnInit, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {HttpClient, HttpClientModule} from '@angular/common/http';
+import {HttpClient, HttpClientModule, HttpParams} from '@angular/common/http';
 import Keycloak from 'keycloak-js';
 
 @Component({
@@ -33,19 +33,45 @@ export class RefreshTokenPanelComponent implements OnInit {
   }
 
   public refreshToken(): void {
-    this.keycloak.updateToken(999999)
-      .then((refreshed: boolean) => {
-        if (refreshed) {
-          alert('Token refreshed successfully via manual button.');
-          window.location.reload();
-        } else {
-          alert('Token is still valid, not refreshed.');
+    const refreshToken = this.keycloak.refreshToken;
+    console.log('Refresh token:', refreshToken);
+    if (!refreshToken) {
+      alert('No refresh token available.');
+      return;
+    }
+
+    const tokenUrl = `${this.keycloak.authServerUrl}/realms/${this.keycloak.realm}/protocol/openid-connect/token`;
+    console.log('Refreshing token at URL:', tokenUrl);
+    const body = new HttpParams()
+      .set('grant_type', 'refresh_token')
+      .set('client_id', this.keycloak.clientId as string)
+      .set('refresh_token', refreshToken);
+
+    this.http.post(tokenUrl, body, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
+      .subscribe({
+        next: (response: any) => {
+          // Update Keycloak tokens manually
+          this.keycloak.token = response.access_token;
+          this.keycloak.refreshToken = response.refresh_token;
+          this.keycloak.idToken = response.id_token;
+
+          // Update the component state instead of reloading
+          try {
+            const payload = this.decodeTokenPayload(response.access_token);
+            this.tokenExpiration.set(this.getClaimAsDate(payload, 'exp'));
+            this.tokenIssuedAt.set(this.getClaimAsDate(payload, 'iat'));
+            this.lastAuthenticatedAt.set(this.getClaimAsDate(payload, 'auth_time'));
+          } catch (e) {
+            console.error('Failed to decode new token', e);
+          }
+
+          alert('Token refreshed successfully.');
+        },
+        error: (err) => {
+          alert('Failed to refresh token: ' + JSON.stringify(err));
         }
-      })
-      .catch(async (err) => {
-        const errorContent = err?.error instanceof Blob ? await err.error.text() : JSON.stringify(err?.error ?? err);
-        alert(`Failed to refresh token. Server responded with: ${errorContent}`);
       });
+
   }
 
   private getClaimAsDate(payload: any, claimType: string): Date | null {

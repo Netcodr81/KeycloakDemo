@@ -57,7 +57,9 @@ export class AppComponent implements OnInit {
   }
 
   public logout(): void {
-    this.keycloak.logout();
+    this.keycloak.logout({
+      redirectUri: "http://localhost:4200"
+    });
   }
 
 
