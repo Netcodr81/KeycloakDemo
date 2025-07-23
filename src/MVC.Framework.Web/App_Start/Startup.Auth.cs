@@ -96,6 +96,37 @@ namespace MVC.Framework.Web
                                 identity.AddClaim(new Claim("access_token", accessToken));
                             }
 
+                            var resourceAccessClaim = identity.FindFirst("resource_access");
+                            if (resourceAccessClaim != null)
+                            {
+                                var resourceAccess = JObject.Parse(resourceAccessClaim.Value);
+                                var clientRoles = resourceAccess[KeycloakClientId]?["roles"];
+                                if (clientRoles != null)
+                                {
+                                    foreach (var role in clientRoles)
+                                    {
+                                        identity.AddClaim(new Claim(ClaimTypes.Role, role.ToString()));
+                                    }
+                                }
+
+                            }
+
+                            var realmAccessClaim = identity.FindFirst("realm_access");
+                            if (realmAccessClaim != null)
+                            {
+                                var realmAccess = JObject.Parse(realmAccessClaim.Value);
+                                var realmRoles = realmAccess["roles"];
+
+                                if (realmRoles != null)
+                                {
+                                    foreach (var role in realmRoles)
+                                    {
+                                        identity.AddClaim(new Claim(ClaimTypes.Role, role.ToString()));
+                                    }
+                                }
+
+                            }
+
                             // Your custom logic from the Callback action should go here
                             var decodedToken = Helper.DecodeToken(accessToken); // Assuming Helper.DecodeToken exists
                             var username = decodedToken.Claims.FirstOrDefault(x => x.Type == "preferred_username")?.Value;

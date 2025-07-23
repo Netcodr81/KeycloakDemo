@@ -62,14 +62,14 @@
                     {
                         <div class="flex flex-col items-end gap-2">
                             <span>Welcome @userName</span>
-                            <a href="@Url.Action("SignOut", "Authorization")" class="nav-link">
+                            <a href="@Url.Action("SignOut", "Authorization")" class="text-blue-600 hover:underline">
                                 <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Logout
                             </a>
                         </div>
                     }
                     else
                     {
-                        <a href="@Url.Action("SignIn", "Authorization")" class="nav-link">
+                        <a href="@Url.Action("SignIn", "Authorization")" class="text-blue-600 hover:underline">
                             <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
                         </a>
                     }
@@ -106,6 +106,10 @@
                            class="btn btn-ghost justify-start @(Request.Path.ToString().EndsWith("/User/UserInfo") ? "active-link" : "")">
                             User Information
                         </a>
+                        <a href="@Url.Action("UserRoles", "User")"
+                           class="btn btn-ghost justify-start @(Request.Path.ToString().EndsWith("/User/UserRoles") ? "active-link" : "")">
+                            User Roles
+                        </a>
                     }
                 </div>
             </div>
@@ -132,6 +136,12 @@
                                 <a href="@Url.Action("UserInfo", "User")"
                                    class="rounded-btn @(Request.Path.ToString().EndsWith("/User/UserInfo") ? "active-link" : "")">
                                     User Information
+                                </a>
+                            </li>
+                            <li>
+                                <a href="@Url.Action("UserRoles", "User")"
+                                   class="rounded-btn @(Request.Path.ToString().EndsWith("/User/UserRoles") ? "active-link" : "")">
+                                    User Roles
                                 </a>
                             </li>
                         }

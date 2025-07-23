@@ -2681,6 +2681,9 @@
   .gap-2 {
     gap: calc(var(--spacing) * 2);
   }
+  .gap-4 {
+    gap: calc(var(--spacing) * 4);
+  }
   .gap-6 {
     gap: calc(var(--spacing) * 6);
   }
@@ -2919,6 +2922,9 @@
   .text-base-content {
     color: var(--color-base-content);
   }
+  .text-blue-600 {
+    color: var(--color-blue-600);
+  }
   .text-gray-600 {
     color: var(--color-gray-600);
   }
@@ -3126,6 +3132,13 @@
     &:hover {
       @media (hover: hover) {
         background-color: var(--color-zinc-500);
+      }
+    }
+  }
+  .hover\:underline {
+    &:hover {
+      @media (hover: hover) {
+        text-decoration-line: underline;
       }
     }
   }

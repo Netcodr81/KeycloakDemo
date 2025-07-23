@@ -78,8 +78,7 @@ namespace MVC.Framework.Web.Controllers
     {
 
         var user = User as ClaimsPrincipal;
-        var claims = user?.Claims.Select(c => new { type = c.Type, value = c.Value }).ToList();
-        var viewModelClaims = user.Claims.ToList();
+        var viewModelClaims = user.Claims.Where(c => c.Type != "resource_access" && c.Type != "realm_access").ToList();
         return PartialView("Shared/_UserClaimsPanel", new ClaimsPanelViewModel {Claims =viewModelClaims});
     }
 
@@ -89,6 +88,25 @@ namespace MVC.Framework.Web.Controllers
         return PartialView("Shared/_UserClaimsPanel", new ClaimsPanelViewModel());
     }
 
+    public async Task<ActionResult> UserRoles()
+    {
+        var user = User as ClaimsPrincipal;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var roles =  user.Claims
+                .Where(c => c.Type == ClaimTypes.Role)
+                .Select(c => c.Value)
+                .ToList();
+
+            var isAdmin =  user.IsInRole("MVC_Framework_Admin");
+            var isUser = user.IsInRole("MVC_Framework_User");
+
+            return View(new UserRoles {Roles = roles, IsInAdminPolicy = isAdmin, IsInUserPolicy = isUser});
+        }
+
+        return View();
+    }
 
 
     [HttpPost]
