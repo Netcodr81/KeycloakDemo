@@ -42,7 +42,7 @@
 
         if (user.Identity?.IsAuthenticated == true)
         {
-            Claims = user.Claims.ToList();
+            Claims = user.Claims.Where(c => c.Type != "realm_access" && c.Type != "resource_access").ToList();
         }
     }
 

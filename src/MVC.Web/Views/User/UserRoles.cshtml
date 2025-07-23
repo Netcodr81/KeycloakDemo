@@ -1,0 +1,29 @@
+﻿@model MVC.Web.Models.UserRoles
+
+<div class="flex flex-col gap-4">
+    <h1 class="font-bold text-2xl ">User Roles and Policies</h1>
+    <section class="flex flex-col gap-4">
+        @if (Model.Roles.Any())
+        {
+            <h2 class="font-semibold text-lg">Your Roles:</h2>
+            <ul>
+                @foreach (var role in Model.Roles)
+                {
+                    <li>@role</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>You have no assigned roles.</p>
+        }
+    </section>
+
+    <hr />
+
+    <section class="flex flex-col gap-4">
+        <h2 class="font-semibold text-lg">Policy Status:</h2>
+        <p>Has "Admin" Policy: <strong>@Model.IsInAdminPolicy</strong></p>
+        <p>Has "User" Policy: <strong>@Model.IsInUserPolicy</strong></p>
+    </section>
+</div>

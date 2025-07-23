@@ -4,20 +4,24 @@ using MVC.Web.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using MVC.Web.Authentication;
 
 namespace MVC.Web.Controllers;
 
+[Authorize]
 public class UserController : Controller
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     private readonly ITokenService _tokenService;
+    private readonly IAuthorizationService _authorizationService;
 
-    public UserController(IHttpContextAccessor httpContextAccessor, ITokenService tokenService)
+    public UserController(IHttpContextAccessor httpContextAccessor, ITokenService tokenService, IAuthorizationService authorizationService)
     {
         _httpContextAccessor = httpContextAccessor;
         _tokenService = tokenService;
+        _authorizationService = authorizationService;
     }
 
     public IActionResult UserInfo()
@@ -36,6 +40,26 @@ public class UserController : Controller
         ViewData["RefreshTokenModel"] = refreshTokenModel;
 
         return View();
+    }
+
+    public async Task<IActionResult> UserRoles()
+    {
+        var user = _httpContextAccessor.HttpContext.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var roles =  user.Claims
+                .Where(c => c.Type == "role")
+                .Select(c => c.Value)
+                .ToList();
+
+            var isAdmin = (await _authorizationService.AuthorizeAsync(user, "Admin")).Succeeded;
+            var isUser = (await _authorizationService.AuthorizeAsync(user, "User")).Succeeded;
+
+            return View(new UserRoles {Roles = roles, IsInAdminPolicy = isAdmin, IsInUserPolicy = isUser});
+        }
+
+        return Unauthorized();
     }
 
     #region Access Token Methods
@@ -78,9 +102,15 @@ public class UserController : Controller
     [HttpPost]
     public IActionResult ShowClaims()
     {
+        var user = _httpContextAccessor.HttpContext.User;
 
-        var claims = User.Claims.Select(c => new { type = c.Type, value = c.Value }).ToList();
-        return Json(claims);
+        if (user.Identity is ClaimsIdentity identity)
+        {
+            var claims = identity.Claims.Select(c => new { type = c.Type, value = c.Value }).ToList();
+            return Json(claims);
+        }
+
+        return Json(new List<object>());
     }
 
     [HttpPost]

@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Keycloak.AuthServices.Authentication;
 using Keycloak.AuthServices.Authorization;
+using Keycloak.AuthServices.Common;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -36,10 +37,25 @@ public static class ServiceConfiguration
                 }
             );
 
-        services.AddKeycloakAuthorization(configuration)
+        services.AddAuthorization()
+            .AddKeycloakAuthorization(options =>
+            {
+                options.Realm = configuration.GetValue<string>("Keycloak:realm");
+                options.AuthServerUrl = configuration.GetValue<string>("Keycloak:auth-server-url");
+                options.SslRequired = configuration.GetValue<string>("Keycloak:ssl-required");
+                options.Resource = configuration.GetValue<string>("Keycloak:resource");
+                options.VerifyTokenAudience = true;
+                options.Credentials = new KeycloakClientInstallationCredentials
+                {
+                    Secret = configuration.GetValue<string>("Keycloak:credentials:secret")
+                };
+                options.EnableRolesMapping = RolesClaimTransformationSource.All;
+                options.RolesResource = configuration.GetValue<string>("Keycloak:resource");
+                options.RoleClaimType = KeycloakConstants.RoleClaimType;
+            })
             .AddAuthorizationBuilder()
-            .AddPolicy("Admin", policy => policy.RequireResourceRoles("admin"))
-            .AddPolicy("user", policy => policy.RequireResourceRoles("user"));
+            .AddPolicy("Admin", policy => policy.RequireRole("BlazorWeb_Client_Admin"))
+            .AddPolicy("User", policy => policy.RequireRole("BlazorWeb_Client_User"));
 
         return services;
     }

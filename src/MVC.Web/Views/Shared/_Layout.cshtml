@@ -69,6 +69,7 @@
                     @if (User.Identity?.IsAuthenticated == true)
                     {
                         <a asp-action="UserInfo" asp-controller="User" class="btn btn-ghost justify-start @(ViewContext.RouteData.Values["Action"]?.ToString() == "UserInfo" ? "active-link" : "")">User Information</a>
+                        <a asp-action="UserRoles" asp-controller="User" class="btn btn-ghost justify-start @(ViewContext.RouteData.Values["Action"]?.ToString() == "UserRoles" ? "active-link" : "")">User Roles</a>
                     }
                 </div>
             </div>
@@ -93,6 +94,11 @@
                             <li>
                                 <a asp-action="UserInfo" asp-controller="User" class="rounded-btn @(ViewContext.RouteData.Values["Action"]?.ToString() == "UserInfo" ? "active-link" : "")">
                                     User Information
+                                </a>
+                            </li>
+                            <li>
+                                <a asp-action="UserRoles" asp-controller="User" class="rounded-btn @(ViewContext.RouteData.Values["Action"]?.ToString() == "UserRoles" ? "active-link" : "")">
+                                    User Roles
                                 </a>
                             </li>
                         }
