@@ -1,0 +1,58 @@
+﻿@page "/user-roles"
+@attribute [Authorize]
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IAuthorizationService AuthorizationService
+
+<div class="flex flex-col gap-4">
+<h1 class="font-bold text-2xl ">User Roles and Policies</h1>
+<section class="flex flex-col gap-4">
+    @if (userRoles.Any())
+    {
+        <h2 class="font-semibold text-lg">Your Roles:</h2>
+        <ul>
+            @foreach (var role in userRoles)
+            {
+                <li>@role</li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>You have no assigned roles.</p>
+    }
+</section>
+
+<hr />
+
+<section class="flex flex-col gap-4">
+<h2 class="font-semibold text-lg">Policy Status:</h2>
+<p>Has "Admin" Policy: <strong>@isUserInAdminPolicy</strong></p>
+<p>Has "User" Policy: <strong>@isUserInUserPolicy</strong></p>
+</section>
+</div>
+@code {
+    private List<string> userRoles = new();
+    private bool isUserInAdminPolicy;
+    private bool isUserInUserPolicy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity is { IsAuthenticated: true })
+        {
+            userRoles = user.Claims
+                .Where(c => c.Type == "role")
+                .Select(c => c.Value)
+                .ToList();
+
+            var adminPolicyResult = await AuthorizationService.AuthorizeAsync(user, "Admin");
+            isUserInAdminPolicy = adminPolicyResult.Succeeded;
+
+            var userPolicyResult = await AuthorizationService.AuthorizeAsync(user, "User");
+            isUserInUserPolicy = userPolicyResult.Succeeded;
+        }
+    }
+}

@@ -1,0 +1,121 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>@ViewData["Title"] MVC</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="~/MVC.Web.styles.css" asp-append-version="true"/>
+</head>
+<body>
+<div class="min-h-screen bg-base-100 font-inter text-base-content">
+    <div class="flex w-full flex-col">
+        <!-- Mobile menu toggle (hidden checkbox hack) -->
+        <input type="checkbox" id="mobile-menu-toggle" class="peer hidden">
+
+        <!-- Header -->
+        <header class="navbar sticky top-0 z-50 bg-base-100 shadow-md px-4 py-3 border-b border-base-300 tablet:px-6 laptop:px-8">
+            <!-- Mobile menu button (label for checkbox) -->
+            <div class="mr-6 flex laptop:hidden">
+                <label for="mobile-menu-toggle" class="btn btn-ghost btn-circle">
+                    <svg aria-hidden="true" class="h-5 w-5 stroke-black" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <path d="M3 6h18M3 12h18M3 18h18"></path>
+                    </svg>
+                </label>
+            </div>
+
+            <!-- Logo -->
+            <div class="navbar-start flex grow basis-0 items-center">
+                <a href="/" aria-label="Home page" class="flex items-center">
+                    <!-- Mobile logo -->
+                    <div class="h-9 w-9 laptop:hidden bg-primary rounded-lg flex items-center justify-center">
+                        <span class="text-primary-content font-bold text-lg">M</span>
+                    </div>
+                    <!-- Desktop logo -->
+                    <div class="hidden laptop:flex items-center space-x-2">
+                        <div class="h-9 w-9 bg-primary rounded-lg flex items-center justify-center">
+                            <span class="text-primary-content font-bold text-lg">M</span>
+                        </div>
+                        <span class="text-xl font-display font-semibold">MVC .NET</span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="navbar-end">
+                <partial name="_LoginPartial" />
+            </div>
+        </header>
+
+        <!-- Mobile Navigation -->
+        <nav class="fixed inset-0 z-40 bg-neutral/40 backdrop-blur-sm laptop:hidden translate-x-full transition-transform peer-checked:translate-x-0">
+            <div class="fixed inset-y-0 left-0 w-full max-w-xs bg-base-100 px-6 py-6 shadow-lg flex flex-col">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center space-x-4">
+                        <div class="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
+                            <span class="text-primary-content font-bold">M</span>
+                        </div>
+                        <span class="text-lg font-display font-semibold">MVC Interactive Server</span>
+                    </div>
+                    <label for="mobile-menu-toggle" class="btn btn-ghost btn-circle">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-6 w-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </label>
+                </div>
+                <div class="menu bg-base-100 p-0">
+                    <a asp-action="Index" asp-controller="Home" class="btn btn-ghost justify-start @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active-link" : "")">Home</a>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a asp-action="UserInfo" asp-controller="User" class="btn btn-ghost justify-start @(ViewContext.RouteData.Values["Action"]?.ToString() == "UserInfo" ? "active-link" : "")">User Information</a>
+                        <a asp-action="UserRoles" asp-controller="User" class="btn btn-ghost justify-start @(ViewContext.RouteData.Values["Action"]?.ToString() == "UserRoles" ? "active-link" : "")">User Roles</a>
+                    }
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main content with sidebar layout -->
+        <div class="flex flex-row min-h-[calc(100vh-4rem)]">
+            <!-- Sidebar for laptop and above -->
+            <aside class="hidden laptop:block w-64 bg-base-200 shrink-0 border-r border-base-300">
+                <div class="menu p-4 w-64">
+                    <div class="menu-title opacity-60 text-lg">
+                        Navigation
+                    </div>
+                    <ul>
+                        <li>
+                            <a asp-action="Index" asp-controller="Home" class="rounded-btn @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active-link" : "")">
+                                Home
+                            </a>
+                        </li>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li>
+                                <a asp-action="UserInfo" asp-controller="User" class="rounded-btn @(ViewContext.RouteData.Values["Action"]?.ToString() == "UserInfo" ? "active-link" : "")">
+                                    User Information
+                                </a>
+                            </li>
+                            <li>
+                                <a asp-action="UserRoles" asp-controller="User" class="rounded-btn @(ViewContext.RouteData.Values["Action"]?.ToString() == "UserRoles" ? "active-link" : "")">
+                                    User Roles
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="flex-1 px-4 py-8 tablet:px-6 laptop:px-8 overflow-auto">
+                <div class="prose max-w-4xl mx-auto">
+                    @RenderBody()
+                </div>
+            </main>
+        </div>
+    </div>
+</div>
+
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

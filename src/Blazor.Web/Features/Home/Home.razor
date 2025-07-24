@@ -1,0 +1,13 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<h1>Blazor Web App with Keycloak</h1>
+<AuthorizeView>
+    <Authorized>
+        <p>This is a sample Blazor Web application that demonstrates how to integrate with Keycloak for authentication and authorization. Click on the claims link to see your current claims</p>
+    </Authorized>
+    <NotAuthorized>
+        <p>This is a sample Blazor Web application that demonstrates how to integrate with Keycloak for authentication and authorization. Login to see more</p>
+    </NotAuthorized>
+</AuthorizeView>

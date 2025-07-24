@@ -1,0 +1,17 @@
+﻿@import "tailwindcss";
+@plugin "daisyui" {
+    themes: nord --default;
+}
+
+@theme {
+
+    --breakpoint-*: initial;
+    --breakpoint-mobile: 0px;
+    --breakpoint-tablet: 481px;
+    --breakpoint-laptop: 769px;
+    --breakpoint-desktop: 1025px;
+}
+
+.active-link {
+    @apply bg-zinc-600 text-white;
+}

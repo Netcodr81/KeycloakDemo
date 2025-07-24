@@ -1,0 +1,15 @@
+﻿@model MVC.Framework.Web.Models.RefreshTokenViewModel
+
+<div class="grid grid-cols-[auto,1fr] items-center gap-x-6 gap-y-4 text-sm">
+    <div class="font-medium text-gray-600">Token Expiration</div>
+    <div
+        class="font-mono text-gray-900 bg-gray-100 p-2 rounded-md">@(Model?.TokenExpiration?.LocalDateTime.ToString("F") ?? "N/A")</div>
+
+    <div class="font-medium text-gray-600">Token Issued At</div>
+    <div
+        class="font-mono text-gray-900 bg-gray-100 p-2 rounded-md">@(Model?.TokenIssuedAt?.LocalDateTime.ToString("F") ?? "N/A")</div>
+
+    <div class="font-medium text-gray-600">Last Authenticated At</div>
+    <div
+        class="font-mono text-gray-900 bg-gray-100 p-2 rounded-md">@(Model?.LastAuthenticatedAt?.LocalDateTime.ToString("F") ?? "N/A")</div>
+</div>
