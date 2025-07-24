@@ -1,0 +1,22 @@
+<div class="flex flex-col gap-4">
+  <h1 class="font-bold text-2xl ">User Roles and Policies</h1>
+  <section class="flex flex-col gap-4">
+    <ng-container *ngIf="userRoles() && userRoles().length > 0; else noRoles">
+      <h2 class="font-semibold text-lg">Your Roles:</h2>
+      <ul>
+        <li *ngFor="let role of userRoles()">{{ role }}</li>
+      </ul>
+    </ng-container>
+    <ng-template #noRoles>
+      <p>You have no assigned roles.</p>
+    </ng-template>
+  </section>
+
+  <hr />
+
+  <section class="flex flex-col gap-4">
+    <h2 class="font-semibold text-lg">Policy Status:</h2>
+    <p>Has "Admin" Policy: <strong>{{isInAdminRole()}}</strong></p>
+    <p>Has "User" Policy: <strong>{{isInUserRole()}}</strong></p>
+  </section>
+</div>
