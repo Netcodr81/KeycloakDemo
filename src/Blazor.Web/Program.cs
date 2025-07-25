@@ -1,6 +1,7 @@
 using Blazor.Web;
 using Blazor.Web.Authentication;
 using Blazor.Web.Components;
+using Blazor.Web.Middleware;
 // Keep both imports available (commented one is original)
 using Keycloak.AuthServices.Authentication;
 using Keycloak.AuthServices.Authorization;
@@ -50,10 +51,14 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseMiddleware<RequestLoggingMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseAntiforgery();
+
+app.UseMiddleware<RequestLoggingMiddleware>();
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>()

@@ -9,6 +9,10 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 namespace MVC.Web;
 
@@ -66,6 +70,62 @@ public static class ServiceConfiguration
             .AddAuthorizationBuilder()
             .AddPolicy("Admin", policy => policy.RequireRole("MVC_Web_Admin"))
             .AddPolicy("User", policy => policy.RequireRole("MVC_Web_User"));
+
+        return services;
+    }
+
+    public static IServiceCollection AddOpenTelemetryServices(this IServiceCollection services, WebApplicationBuilder builder)
+    {
+        var serviceName = "MVC.Web";
+        var serviceVersion = "1.0.0";
+
+        // Continue with OpenTelemetry configuration
+        services.AddOpenTelemetry()
+            .ConfigureResource(resource => resource.AddService(serviceName: serviceName, serviceVersion: serviceVersion))
+            .WithMetrics(metrics =>
+            {
+                metrics
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddOtlpExporter(options => { options.Endpoint = new Uri("http://localhost:4317"); });
+            })
+            .WithTracing(tracing =>
+            {
+                tracing
+                    .AddAspNetCoreInstrumentation(options =>
+                    {
+                        options.RecordException = true;
+                        options.EnrichWithHttpRequest = (activity, request) =>
+                        {
+                            activity.SetTag("http.request.headers.user_agent", request.Headers.UserAgent);
+                            activity.SetTag("http.request.headers.host", request.Headers.Host);
+                        };
+                    })
+                    .AddHttpClientInstrumentation(options =>
+                    {
+                        options.RecordException = true;
+                        options.EnrichWithHttpRequestMessage = (activity, request) =>
+                        {
+                            if (request.RequestUri != null)
+                            {
+                                activity.SetTag("http.request.uri", request.RequestUri.ToString());
+                            }
+                        };
+                    })
+                    .SetSampler(new AlwaysOnSampler());
+
+
+                // Add OTLP exporter for Aspire Dashboard
+                tracing.AddOtlpExporter(options => { options.Endpoint = new Uri("http://localhost:4317"); });
+            });
+
+        builder.Logging.AddOpenTelemetry(logging =>
+        {
+            logging.IncludeFormattedMessage = true;
+            logging.IncludeScopes = true;
+            logging.ParseStateValues = true;
+            logging.AddOtlpExporter(options => { options.Endpoint = new Uri("http://localhost:4317"); });
+        });
 
         return services;
     }

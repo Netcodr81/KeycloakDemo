@@ -21,6 +21,8 @@ builder.Services.AddControllersWithViews()
 // Add Keycloak authentication and authorization
 builder.Services.AddKeycloakAuthenticationAuthorization(builder.Configuration);
 
+builder.Services.AddOpenTelemetryServices(builder);
+
 builder.Services.AddRazorPages();
 
 builder.Services.AddHttpContextAccessor();
@@ -47,6 +49,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseCookiePolicy();
 app.UseRouting();
+
+app.UseMiddleware<RequestLoggingMiddleware>();
 
 // Authentication must come before Authorization
 app.UseAuthentication();
