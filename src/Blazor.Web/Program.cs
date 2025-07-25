@@ -22,6 +22,8 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddKeycloakAuthenticationAuthorization(builder.Configuration);
 
+builder.Services.AddOpenTelemetryServices(builder);
+
 // Configure cookie OIDC refresher
 builder.Services.ConfigureCookieOidc(
     CookieAuthenticationDefaults.AuthenticationScheme,
@@ -58,6 +60,8 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.MapPrometheusScrapingEndpoint();
 
 app.MapGroup("/authentication").MapLoginAndLogout();
 
