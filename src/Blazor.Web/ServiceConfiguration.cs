@@ -73,28 +73,14 @@ public static class ServiceConfiguration
         var serviceVersion = "1.0.0";
 
         // Configure Serilog with Loki
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Information()
-            .Enrich.WithProperty("Application", serviceName)
-            .Enrich.WithProperty("Environment", builder.Environment.EnvironmentName)
-            .WriteTo.Console()
-            .WriteTo.File("Logs/blazor-web-.log", rollingInterval: RollingInterval.Day)
-            .WriteTo.GrafanaLoki(
-                "http://loki:3100",
-                labels: new[] {
-                    new LokiLabel { Key = "app", Value = serviceName },
-                    new LokiLabel { Key = "env", Value = builder.Environment.EnvironmentName }
-                },
-                credentials: null,
-                batchPostingLimit: 1000,
-                queueLimit: 100000,
-                period: TimeSpan.FromSeconds(2),
-                textFormatter: null
-            )
-            .CreateLogger();
-
-        // Replace the default logger factory with Serilog
-        builder.Host.UseSerilog();
+        // Log.Logger = new LoggerConfiguration()
+        //     .MinimumLevel.Information()
+        //     .Enrich.WithProperty("Application", serviceName)
+        //     .Enrich.WithProperty("Environment", builder.Environment.EnvironmentName)
+        //     .CreateLogger();
+        //
+        // // Replace the default logger factory with Serilog
+        // builder.Host.UseSerilog();
 
         // Continue with OpenTelemetry configuration
         services.AddOpenTelemetry()
@@ -110,25 +96,12 @@ public static class ServiceConfiguration
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation();
 
-                // Add OTLP exporter for Jaeger
-                metrics.AddOtlpExporter(options =>
-                {
-                    options.Endpoint = new Uri("http://localhost:14317");
-                });
-
                 // Add OTLP exporter for Aspire Dashboard
                 metrics.AddOtlpExporter(options =>
                 {
                     options.Endpoint = new Uri("http://localhost:4317");
                 });
 
-                metrics.AddPrometheusExporter();
-
-                metrics.AddPrometheusHttpListener(options =>
-                {
-                    options.UriPrefixes = new string[] { "http://localhost:9464/" };
-                    options.ScrapeEndpointPath = "/metrics";
-                });
             })
             .WithTracing(tracing =>
             {
@@ -155,11 +128,6 @@ public static class ServiceConfiguration
                     })
                     .SetSampler(new AlwaysOnSampler());
 
-                // Add OTLP exporter for Jaeger
-                tracing.AddOtlpExporter(options =>
-                {
-                    options.Endpoint = new Uri("http://localhost:14317");
-                });
 
                 // Add OTLP exporter for Aspire Dashboard
                 tracing.AddOtlpExporter(options =>
@@ -168,32 +136,7 @@ public static class ServiceConfiguration
                 });
             });
 
-        // Configure Serilog with Loki
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Information()
-            .Enrich.WithProperty("Application", serviceName)
-            .Enrich.WithProperty("Environment", builder.Environment.EnvironmentName)
-            .WriteTo.Console()
-            .WriteTo.File("Logs/blazor-web-.log", rollingInterval: RollingInterval.Day)
-            .WriteTo.GrafanaLoki(
-                "http://loki:3100",
-                labels: new[] {
-                    new LokiLabel { Key = "app", Value = serviceName },
-                    new LokiLabel { Key = "env", Value = builder.Environment.EnvironmentName }
-                },
-                credentials: null,
-                batchPostingLimit: 1000,
-                queueLimit: 100000,
-                period: TimeSpan.FromSeconds(2),
-                textFormatter: null
-            )
-            .CreateLogger();
-
-        // Replace the default logger factory with Serilog
-        builder.Host.UseSerilog();
-
         builder.Logging.AddOpenTelemetry(logging => logging.AddOtlpExporter());
-
 
         return services;
     }

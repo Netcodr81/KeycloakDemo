@@ -61,8 +61,6 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-app.MapPrometheusScrapingEndpoint();
-
 app.MapGroup("/authentication").MapLoginAndLogout();
 
 app.Run();
