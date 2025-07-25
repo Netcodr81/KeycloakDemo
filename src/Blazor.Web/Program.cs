@@ -10,12 +10,10 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
-
+using Serilog;
 using TokenHandler = Blazor.Web.Authentication.TokenHandler;
 
 var builder = WebApplication.CreateBuilder(args);
-
-
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();

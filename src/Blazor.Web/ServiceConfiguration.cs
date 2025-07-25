@@ -72,36 +72,15 @@ public static class ServiceConfiguration
         var serviceName = "Blazor.Web";
         var serviceVersion = "1.0.0";
 
-        // Configure Serilog with Loki
-        // Log.Logger = new LoggerConfiguration()
-        //     .MinimumLevel.Information()
-        //     .Enrich.WithProperty("Application", serviceName)
-        //     .Enrich.WithProperty("Environment", builder.Environment.EnvironmentName)
-        //     .CreateLogger();
-        //
-        // // Replace the default logger factory with Serilog
-        // builder.Host.UseSerilog();
-
         // Continue with OpenTelemetry configuration
         services.AddOpenTelemetry()
-            .ConfigureResource(resource => resource.AddService(serviceName: serviceName, serviceVersion: serviceVersion)
-                .AddAttributes(new Dictionary<string, object>
-                {
-                    ["deployment.environment"] = builder.Environment.EnvironmentName,
-                    ["host.name"] = Environment.MachineName
-                }))
+            .ConfigureResource(resource => resource.AddService(serviceName: serviceName, serviceVersion: serviceVersion))
             .WithMetrics(metrics =>
             {
                 metrics
                     .AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation();
-
-                // Add OTLP exporter for Aspire Dashboard
-                metrics.AddOtlpExporter(options =>
-                {
-                    options.Endpoint = new Uri("http://localhost:4317");
-                });
-
+                    .AddHttpClientInstrumentation()
+                    .AddOtlpExporter(options => { options.Endpoint = new Uri("http://localhost:4317"); });
             })
             .WithTracing(tracing =>
             {
@@ -130,13 +109,16 @@ public static class ServiceConfiguration
 
 
                 // Add OTLP exporter for Aspire Dashboard
-                tracing.AddOtlpExporter(options =>
-                {
-                    options.Endpoint = new Uri("http://localhost:4317");
-                });
+                tracing.AddOtlpExporter(options => { options.Endpoint = new Uri("http://localhost:4317"); });
             });
 
-        builder.Logging.AddOpenTelemetry(logging => logging.AddOtlpExporter());
+        builder.Logging.AddOpenTelemetry(logging =>
+        {
+            logging.IncludeFormattedMessage = true;
+            logging.IncludeScopes = true;
+            logging.ParseStateValues = true;
+            logging.AddOtlpExporter(options => { options.Endpoint = new Uri("http://localhost:4317"); });
+        });
 
         return services;
     }
