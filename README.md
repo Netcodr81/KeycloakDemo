@@ -322,6 +322,40 @@ cd src/Angular.Web && rm -rf node_modules && npm install
 # Clean .NET build artifacts
 dotnet clean && dotnet restore
 ```
+## 📊 OpenTelemetry Observability Stack
+
+This project includes a complete observability stack using OpenTelemetry:
+
+### Service Access URLs
+
+**🔐 Keycloak (Identity Provider)**
+- URL: `http://localhost:8080`
+- Admin Console: `http://localhost:8080/admin`
+- Credentials: admin/admin
+
+**📊 Aspire Dashboard (OpenTelemetry)**
+- URL: `http://localhost:18888`
+- OTLP Endpoint: `localhost:4317`
+
+**🔍 Jaeger (Distributed Tracing)**
+- URL: `http://localhost:16686`
+
+**📈 Prometheus (Metrics)**
+- URL: `http://localhost:9090`
+
+**📊 Grafana (Dashboards & Visualization)**
+- URL: `http://localhost:3000`
+- No authentication required (anonymous access enabled)
+
+**📝 Loki (Log Aggregation)**
+- URL: `http://localhost:3100`
+- API endpoint for log queries
+
+**🔧 OpenTelemetry Collector**
+- OTLP Receiver: `localhost:4317`
+- Prometheus metrics: `http://localhost:8889`
+- Health check: `http://localhost:13133`
+- ZPages (diagnostics): `http://localhost:55679`
 
 ## 📄 License
 
@@ -335,6 +369,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Angular Security Guide](https://angular.io/guide/security)
 - [ASP.NET Core Security](https://docs.microsoft.com/en-us/aspnet/core/security/)
 
----
-
-**Note**: This is a demonstration project for educational purposes. For production use, ensure proper security configurations, use HTTPS, and follow security best practices.

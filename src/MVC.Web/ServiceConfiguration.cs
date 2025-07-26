@@ -76,7 +76,7 @@ public static class ServiceConfiguration
 
     public static IServiceCollection AddOpenTelemetryServices(this IServiceCollection services, WebApplicationBuilder builder)
     {
-        var serviceName = "MVC.Web";
+        var serviceName = "Blazor.Web";
         var serviceVersion = "1.0.0";
 
         // Continue with OpenTelemetry configuration

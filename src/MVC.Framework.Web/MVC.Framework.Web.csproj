@@ -164,6 +164,9 @@
         <Reference Include="OpenTelemetry.Api.ProviderBuilderExtensions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=7bd6737fe5b67e3c, processorArchitecture=MSIL">
           <HintPath>..\..\packages\OpenTelemetry.Api.ProviderBuilderExtensions.1.12.0\lib\net462\OpenTelemetry.Api.ProviderBuilderExtensions.dll</HintPath>
         </Reference>
+        <Reference Include="OpenTelemetry.Exporter.Console, Version=1.0.0.0, Culture=neutral, PublicKeyToken=7bd6737fe5b67e3c, processorArchitecture=MSIL">
+          <HintPath>..\..\packages\OpenTelemetry.Exporter.Console.1.12.0\lib\net462\OpenTelemetry.Exporter.Console.dll</HintPath>
+        </Reference>
         <Reference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol, Version=1.0.0.0, Culture=neutral, PublicKeyToken=7bd6737fe5b67e3c, processorArchitecture=MSIL">
           <HintPath>..\..\packages\OpenTelemetry.Exporter.OpenTelemetryProtocol.1.12.0\lib\net462\OpenTelemetry.Exporter.OpenTelemetryProtocol.dll</HintPath>
         </Reference>
@@ -316,6 +319,7 @@
         <Compile Include="Models\RefreshTokenViewModel.cs" />
         <Compile Include="Models\UserRoles.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Include="RequestLoggingFilter.cs" />
         <Compile Include="Startup.cs" />
     </ItemGroup>
     <ItemGroup>

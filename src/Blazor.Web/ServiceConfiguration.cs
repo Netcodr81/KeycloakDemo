@@ -71,6 +71,7 @@ public static class ServiceConfiguration
     {
         var serviceName = "Blazor.Web";
         var serviceVersion = "1.0.0";
+        var otlpEndpoint = builder.Configuration.GetValue<string>("OpenTelemetry:OtlpEndpoint");
 
         // Continue with OpenTelemetry configuration
         services.AddOpenTelemetry()
@@ -80,7 +81,7 @@ public static class ServiceConfiguration
                 metrics
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddOtlpExporter(options => { options.Endpoint = new Uri("http://localhost:4317"); });
+                    .AddOtlpExporter(options => { options.Endpoint = new Uri(otlpEndpoint); });
             })
             .WithTracing(tracing =>
             {
@@ -109,16 +110,15 @@ public static class ServiceConfiguration
 
 
                 // Add OTLP exporter for Aspire Dashboard
-                tracing.AddOtlpExporter(options => { options.Endpoint = new Uri("http://localhost:4317"); });
+                tracing.AddOtlpExporter(options => { options.Endpoint = new Uri(otlpEndpoint); });
+            })
+            .WithLogging(logging =>
+            {
+                logging.AddOtlpExporter(options =>
+                {
+                    options.Endpoint = new Uri(otlpEndpoint);
+                });
             });
-
-        builder.Logging.AddOpenTelemetry(logging =>
-        {
-            logging.IncludeFormattedMessage = true;
-            logging.IncludeScopes = true;
-            logging.ParseStateValues = true;
-            logging.AddOtlpExporter(options => { options.Endpoint = new Uri("http://localhost:4317"); });
-        });
 
         return services;
     }
