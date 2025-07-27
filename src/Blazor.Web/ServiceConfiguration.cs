@@ -1,4 +1,6 @@
-﻿using System.Security.Claims;
+﻿using System.Diagnostics.Metrics;
+using System.Reflection;
+using System.Security.Claims;
 using Keycloak.AuthServices.Authentication;
 using Keycloak.AuthServices.Authorization;
 using Keycloak.AuthServices.Common;
@@ -69,57 +71,57 @@ public static class ServiceConfiguration
 
     public static IServiceCollection AddOpenTelemetryServices(this IServiceCollection services, WebApplicationBuilder builder)
     {
-        var serviceName = "Blazor.Web";
-        var serviceVersion = "1.0.0";
-        var otlpEndpoint = builder.Configuration.GetValue<string>("OpenTelemetry:OtlpEndpoint");
+        const string serviceName = "Blazor.Web";
+        var otlpEndpoint = new Uri(builder.Configuration.GetValue<string>("OTLP_Endpoint")!);
 
         // Continue with OpenTelemetry configuration
-        services.AddOpenTelemetry()
-            .ConfigureResource(resource => resource.AddService(serviceName: serviceName, serviceVersion: serviceVersion))
-            .WithMetrics(metrics =>
+        builder.Services.AddOpenTelemetry()
+            .ConfigureResource(resource =>
             {
+                resource
+                    .AddService(serviceName)
+                    .AddAttributes(new[]
+                    {
+                        new KeyValuePair<string, object>("service.version",
+                            Assembly.GetExecutingAssembly().GetName().Version!.ToString())
+                    });
+            })
+            .WithTracing(tracing =>
+                tracing
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddConsoleExporter()
+                    .AddOtlpExporter(options =>
+                        options.Endpoint = otlpEndpoint)
+            )
+            .WithMetrics(metrics =>
                 metrics
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddOtlpExporter(options => { options.Endpoint = new Uri(otlpEndpoint); });
-            })
-            .WithTracing(tracing =>
-            {
-                tracing
-                    .AddAspNetCoreInstrumentation(options =>
-                    {
-                        options.RecordException = true;
-                        options.EnrichWithHttpRequest = (activity, request) =>
-                        {
-                            activity.SetTag("http.request.headers.user_agent", request.Headers.UserAgent);
-                            activity.SetTag("http.request.headers.host", request.Headers.Host);
-                        };
-                    })
-                    .AddHttpClientInstrumentation(options =>
-                    {
-                        options.RecordException = true;
-                        options.EnrichWithHttpRequestMessage = (activity, request) =>
-                        {
-                            if (request.RequestUri != null)
-                            {
-                                activity.SetTag("http.request.uri", request.RequestUri.ToString());
-                            }
-                        };
-                    })
-                    .SetSampler(new AlwaysOnSampler());
-
-
-                // Add OTLP exporter for Aspire Dashboard
-                tracing.AddOtlpExporter(options => { options.Endpoint = new Uri(otlpEndpoint); });
-            })
-            .WithLogging(logging =>
-            {
-                logging.AddOtlpExporter(options =>
-                {
-                    options.Endpoint = new Uri(otlpEndpoint);
-                });
-            });
+                    // Metrics provides by ASP.NET
+                    .AddMeter("Microsoft.AspNetCore.Hosting")
+                    .AddMeter("Microsoft.AspNetCore.Server.Kestrel")
+                    .AddMeter(ApplicationDiagnostics.Meter.Name)
+                    .AddConsoleExporter()
+                    .AddOtlpExporter(options =>
+                        options.Endpoint = otlpEndpoint)
+            )
+            .WithLogging(
+                logging=>
+                    logging
+                        .AddConsoleExporter()
+                        .AddOtlpExporter(options =>
+                            options.Endpoint = otlpEndpoint)
+            );
 
         return services;
     }
+}
+
+public static class ApplicationDiagnostics
+{
+    private const string ServiceName = "Blazor.Web";
+    public static readonly Meter Meter = new(ServiceName);
+
+    public static readonly Counter<long> ClientsCreatedCounter = Meter.CreateCounter<long>("clients.created");
 }

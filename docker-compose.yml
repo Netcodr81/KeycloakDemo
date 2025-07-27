@@ -25,7 +25,7 @@
   jaeger:
     image: jaegertracing/all-in-one:1.58.0
     ports:
-    - "16686:16686" # Jaeger Web UI
+      - "16686:16686" # Jaeger Web UI
 
   prometheus:
     image: prom/prometheus:v2.53.0
@@ -36,6 +36,8 @@
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
 
+
+
   grafana:
     image: grafana/grafana:10.4.4
     volumes:
@@ -45,7 +47,6 @@
       GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
     ports:
       - "3000:3000"
-
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.103.0
@@ -64,10 +65,11 @@
       - jaeger
       - prometheus
       - loki
-    
+
 
   loki:
     image: grafana/loki:2.7.1
     ports:
       - "3100:3100"
     command: -config.file=/etc/loki/local-config.yaml
+
