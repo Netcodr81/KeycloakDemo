@@ -65,6 +65,7 @@
       - jaeger
       - prometheus
       - loki
+      - aspire.dashboard
 
 
   loki:
