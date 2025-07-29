@@ -189,7 +189,7 @@ dotnet run
 cd src/Blazor.Web
 dotnet run
 ```
-**URL**: https://localhost:5003
+**URL**: http://localhost:5200
 
 #### ASP.NET Framework MVC
 Open `KeycloakDemo.sln` in Visual Studio and run the `MVC.Framework.Web` project.
@@ -205,12 +205,12 @@ Open `KeycloakDemo.sln` in Visual Studio and run the `MVC.Framework.Web` project
 The `keycloak_demo` realm includes:
 
 #### Clients Configuration
-| Client ID | Type | Access Type | Valid Redirect URIs |
-|-----------|------|-------------|-------------------|
-| angular_client | Public | SPA | http://localhost:4200/* |
-| mvc_client | Confidential | Web App | https://localhost:5001/* |
-| blazor_client | Confidential | Web App | https://localhost:5003/* |
-| mvc_framework_client | Confidential | Web App | http://localhost:* |
+| Client ID | Type | Access Type | Valid Redirect URIs      |
+|-----------|------|-------------|--------------------------|
+| angular_client | Public | SPA | http://localhost:4200/*  |
+| mvc_client | Confidential | Web App | http://localhost:5204/*  |
+| blazor_client | Confidential | Web App | https://localhost:5200/* |
+| mvc_framework_client | Confidential | Web App | http://localhost:5000/*  |
 
 #### Roles
 - **Client Roles**: Specific to each application
@@ -243,6 +243,7 @@ Test users are pre-configured with different role assignments.
 - **OWIN Integration**: Keycloak authentication middleware
 - **Action Filters**: Method-level security
 - **Claims Principal**: Access user claims
+- **Authorization Attributes**: Role-based page and action access control
 
 ## 🔧 Development Configuration
 
@@ -324,7 +325,7 @@ dotnet clean && dotnet restore
 ```
 ## 📊 OpenTelemetry Observability Stack
 
-This project includes a complete observability stack using OpenTelemetry:
+This project includes a complete observability stack using OpenTelemetry for comprehensive monitoring and troubleshooting:
 
 ### Service Access URLs
 
@@ -333,29 +334,42 @@ This project includes a complete observability stack using OpenTelemetry:
 - Admin Console: `http://localhost:8080/admin`
 - Credentials: admin/admin
 
-**📊 Aspire Dashboard (OpenTelemetry)**
+**🌟 Aspire Dashboard**
 - URL: `http://localhost:18888`
-- OTLP Endpoint: `localhost:4317`
+- Features: Service health monitoring, resource usage, and dependency mapping
 
 **🔍 Jaeger (Distributed Tracing)**
 - URL: `http://localhost:16686`
+- Features: End-to-end request visualization, latency analysis, and bottleneck identification
 
 **📈 Prometheus (Metrics)**
 - URL: `http://localhost:9090`
+- Features: Real-time metrics collection, query capabilities, and alerting rules
 
-**📊 Grafana (Dashboards & Visualization)**
+**📊 Grafana (Dashboards)**
 - URL: `http://localhost:3000`
-- No authentication required (anonymous access enabled)
+- Default credentials: None (anonymous access enabled)
+- Features: Pre-configured dashboards for Keycloak, ASP.NET Core, and Angular metrics
 
 **📝 Loki (Log Aggregation)**
-- URL: `http://localhost:3100`
-- API endpoint for log queries
+- URL: `http://localhost:3100` (API endpoint)
+- Features: Centralized logging, structured log queries, and integration with Grafana
 
 **🔧 OpenTelemetry Collector**
-- OTLP Receiver: `localhost:4317`
-- Prometheus metrics: `http://localhost:8889`
-- Health check: `http://localhost:13133`
-- ZPages (diagnostics): `http://localhost:55679`
+- OTLP gRPC Endpoint: `localhost:4317`
+- OTLP HTTP Endpoint: `localhost:4318`
+- Prometheus Endpoint: `http://localhost:8889/metrics`
+- Health Check: `http://localhost:13133`
+- ZPages (Debug): `http://localhost:55679`
+
+### OpenTelemetry Integration
+
+All applications in this demo are instrumented with OpenTelemetry:
+
+- **Angular**: Browser SDK for frontend performance monitoring
+- **ASP.NET Core**: Built-in instrumentation with custom spans for Keycloak operations
+- **Blazor**: Server-side telemetry with component rendering metrics
+- **ASP.NET Framework**: OWIN middleware instrumentation via OpenTelemetry.Instrumentation.Owin
 
 ## 📄 License
 

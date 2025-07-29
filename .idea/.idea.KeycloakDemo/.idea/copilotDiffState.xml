@@ -11,28 +11,19 @@
             </PendingDiffInfo>
           </value>
         </entry>
+        <entry key="$PROJECT_DIR$/loki-config.yml">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/loki-config.yml" />
+              <option name="updatedContent" value="auth_enabled: false&#10;server:&#10;  http_listen_port: 3100&#10;  grpc_listen_port: 9096&#10;  log_level: info&#10;  log_format: logfmt&#10;&#10;common:&#10;  path: /loki&#10;  storage:&#10;    filesystem:&#10;      chunks_directory: /loki/chunks&#10;      rules_directory: /loki/rules&#10;  replication_factor: 1&#10;  ring:&#10;    kvstore:&#10;      store: inmemory&#10;&#10;schema_config:&#10;  configs:&#10;    - from: 2020-10-24&#10;      store: boltdb-shipper&#10;      object_store: filesystem&#10;      schema: v11&#10;      index:&#10;        prefix: index_&#10;        period: 24h&#10;&#10;ruler:&#10;  storage:&#10;    type: local&#10;    local:&#10;      directory: /loki/rules&#10;  rule_path: /loki/rules-temp&#10;  alertmanager_url: http://localhost:9093&#10;  ring:&#10;    kvstore:&#10;      store: inmemory&#10;  enable_api: true&#10;&#10;limits_config:&#10;  reject_old_samples: true&#10;  reject_old_samples_max_age: 168h&#10;  retention_period: 168h&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
         <entry key="$PROJECT_DIR$/src/Blazor.Web/RequestLoggingMiddleware.cs">
           <value>
             <PendingDiffInfo>
               <option name="filePath" value="$PROJECT_DIR$/src/Blazor.Web/RequestLoggingMiddleware.cs" />
               <option name="updatedContent" value="using Microsoft.AspNetCore.Http;&#10;using Microsoft.Extensions.Logging;&#10;using System.Threading.Tasks;&#10;using System.Text.Json;&#10;&#10;namespace Blazor.Web;&#10;&#10;public class RequestLoggingMiddleware&#10;{&#10;    private readonly RequestDelegate _next;&#10;    private readonly ILogger&lt;RequestLoggingMiddleware&gt; _logger;&#10;&#10;    public RequestLoggingMiddleware(RequestDelegate next, ILogger&lt;RequestLoggingMiddleware&gt; logger)&#10;    {&#10;        _next = next;&#10;        _logger = logger;&#10;    }&#10;&#10;    public async Task InvokeAsync(HttpContext context)&#10;    {&#10;        var route = context.Request.Path;&#10;        var query = context.Request.QueryString.HasValue ? context.Request.QueryString.Value : &quot;&quot;;&#10;        var method = context.Request.Method;&#10;        var parameters = context.Request.Query.ToDictionary(kvp =&gt; kvp.Key, kvp =&gt; kvp.Value.ToString());&#10;        var body = &quot;&quot;;&#10;&#10;        if (method == &quot;POST&quot; || method == &quot;PUT&quot;)&#10;        {&#10;            context.Request.EnableBuffering();&#10;            using var reader = new StreamReader(context.Request.Body, leaveOpen: true);&#10;            body = await reader.ReadToEndAsync();&#10;            context.Request.Body.Position = 0;&#10;        }&#10;&#10;        _logger.LogInformation(&quot;Route: {Route}, Method: {Method}, Query: {Query}, Parameters: {Parameters}, Body: {Body}&quot;,&#10;            route, method, query, JsonSerializer.Serialize(parameters), body);&#10;&#10;        await _next(context);&#10;    }&#10;}&#10;" />
-            </PendingDiffInfo>
-          </value>
-        </entry>
-        <entry key="$PROJECT_DIR$/src/MVC.Framework.Web/App_Start/FilterConfig.cs">
-          <value>
-            <PendingDiffInfo>
-              <option name="filePath" value="$PROJECT_DIR$/src/MVC.Framework.Web/App_Start/FilterConfig.cs" />
-              <option name="originalContent" value="using System.Web;&#10;using System.Web.Mvc;&#10;&#10;namespace MVC.Framework.Web&#10;{&#10;    public class FilterConfig&#10;    {&#10;        public static void RegisterGlobalFilters(GlobalFilterCollection filters)&#10;        {&#10;            filters.Add(new HandleErrorAttribute());&#10;        }&#10;    }&#10;}" />
-              <option name="updatedContent" value="using System.Web;&#13;&#10;using System.Web.Mvc;&#13;&#10;&#13;&#10;namespace MVC.Framework.Web&#13;&#10;{&#13;&#10;    public class FilterConfig&#13;&#10;    {&#13;&#10;        public static void RegisterGlobalFilters(GlobalFilterCollection filters)&#13;&#10;        {&#13;&#10;            filters.Add(new HandleErrorAttribute());&#13;&#10;            filters.Add(new RequestLoggingFilter());&#13;&#10;        }&#13;&#10;    }&#13;&#10;}" />
-            </PendingDiffInfo>
-          </value>
-        </entry>
-        <entry key="$PROJECT_DIR$/src/MVC.Framework.Web/RequestLoggingFilter.cs">
-          <value>
-            <PendingDiffInfo>
-              <option name="filePath" value="$PROJECT_DIR$/src/MVC.Framework.Web/RequestLoggingFilter.cs" />
-              <option name="updatedContent" value="using System.Web.Mvc;&#10;using Microsoft.Extensions.Logging;&#10;using System.Text.Json;&#10;&#10;namespace MVC.Framework.Web&#10;{&#10;    public class RequestLoggingFilter : ActionFilterAttribute&#10;    {&#10;        public override void OnActionExecuting(ActionExecutingContext filterContext)&#10;        {&#10;            var loggerFactory = (ILoggerFactory)filterContext.HttpContext.Application[&quot;LoggerFactory&quot;];&#10;            var logger = loggerFactory?.CreateLogger(&quot;RequestLoggingFilter&quot;);&#10;            var route = filterContext.ActionDescriptor.ControllerDescriptor.ControllerName + &quot;/&quot; + filterContext.ActionDescriptor.ActionName;&#10;            var parameters = filterContext.ActionParameters;&#10;            var query = filterContext.HttpContext.Request.QueryString.ToString();&#10;            var method = filterContext.HttpContext.Request.HttpMethod;&#10;            var body = &quot;&quot;;&#10;            if (method == &quot;POST&quot; || method == &quot;PUT&quot;)&#10;            {&#10;                filterContext.HttpContext.Request.InputStream.Position = 0;&#10;                using (var reader = new System.IO.StreamReader(filterContext.HttpContext.Request.InputStream))&#10;                {&#10;                    body = reader.ReadToEnd();&#10;                }&#10;                filterContext.HttpContext.Request.InputStream.Position = 0;&#10;            }&#10;            logger?.LogInformation(&quot;Route: {Route}, Method: {Method}, Query: {Query}, Parameters: {Parameters}, Body: {Body}&quot;,&#10;                route, method, query, JsonSerializer.Serialize(parameters), body);&#10;            base.OnActionExecuting(filterContext);&#10;        }&#10;    }&#10;}&#10;" />
             </PendingDiffInfo>
           </value>
         </entry>
