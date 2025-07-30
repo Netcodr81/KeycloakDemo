@@ -16,12 +16,14 @@ public class UserController : Controller
 
     private readonly ITokenService _tokenService;
     private readonly IAuthorizationService _authorizationService;
+    private readonly ILogger<UserController> _logger;
 
-    public UserController(IHttpContextAccessor httpContextAccessor, ITokenService tokenService, IAuthorizationService authorizationService)
+    public UserController(IHttpContextAccessor httpContextAccessor, ITokenService tokenService, IAuthorizationService authorizationService, ILogger<UserController> logger)
     {
         _httpContextAccessor = httpContextAccessor;
         _tokenService = tokenService;
         _authorizationService = authorizationService;
+        _logger = logger;
     }
 
     public IActionResult UserInfo()
@@ -129,6 +131,7 @@ public class UserController : Controller
         try
         {
             var success = await _tokenService.RefreshTokenAsync();
+            _logger.LogInformation("Access Token refreshed successfully: {Success}", success);
 
             if (success)
             {

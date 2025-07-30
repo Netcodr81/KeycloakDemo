@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/.containers/loki/local-config.yaml">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/.containers/loki/local-config.yaml" />
+              <option name="updatedContent" value="auth_enabled: false&#10;&#10;server:&#10;  http_listen_port: 3100&#10;  grpc_listen_port: 9096&#10;&#10;common:&#10;  path_prefix: /loki&#10;  storage:&#10;    filesystem:&#10;      chunks_directory: /loki/chunks&#10;      rules_directory: /loki/rules&#10;  replication_factor: 1&#10;  ring:&#10;    instance_addr: 127.0.0.1&#10;    kvstore:&#10;      store: inmemory&#10;&#10;schema_config:&#10;  configs:&#10;    - from: 2020-10-24&#10;      store: boltdb-shipper&#10;      object_store: filesystem&#10;      schema: v11&#10;      index:&#10;        prefix: index_&#10;        period: 24h&#10;&#10;ruler:&#10;  alertmanager_url: http://localhost:9093&#10;&#10;# By default, Loki will send anonymous, but uniquely-identifiable usage and configuration&#10;# analytics to Grafana Labs. These statistics are sent to https://stats.grafana.org/&#10;# Statistics help us better understand how Loki is used, and they show us performance&#10;# levels for most users. This helps us prioritize features and documentation.&#10;# For more information on what's sent, look at&#10;# https://github.com/grafana/loki/blob/main/pkg/usagestats/stats.go&#10;# Refer to the buildReport method to see what goes into a report.&#10;#&#10;# If you would like to disable reporting, uncomment the following lines:&#10;#analytics:&#10;#  reporting_enabled: false" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/loki-config.yml">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/loki-config.yml" />
+              <option name="updatedContent" value="auth_enabled: false&#10;server:&#10;  http_listen_port: 3100&#10;  grpc_listen_port: 9096&#10;  log_level: info&#10;  log_format: logfmt&#10;&#10;common:&#10;  path: /loki&#10;  storage:&#10;    filesystem:&#10;      chunks_directory: /loki/chunks&#10;      rules_directory: /loki/rules&#10;  replication_factor: 1&#10;  ring:&#10;    kvstore:&#10;      store: inmemory&#10;&#10;schema_config:&#10;  configs:&#10;    - from: 2020-10-24&#10;      store: boltdb-shipper&#10;      object_store: filesystem&#10;      schema: v11&#10;      index:&#10;        prefix: index_&#10;        period: 24h&#10;&#10;ruler:&#10;  storage:&#10;    type: local&#10;    local:&#10;      directory: /loki/rules&#10;  rule_path: /loki/rules-temp&#10;  alertmanager_url: http://localhost:9093&#10;  ring:&#10;    kvstore:&#10;      store: inmemory&#10;  enable_api: true&#10;&#10;limits_config:&#10;  reject_old_samples: true&#10;  reject_old_samples_max_age: 168h&#10;  retention_period: 168h&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/src/Blazor.Web/RequestLoggingMiddleware.cs">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/src/Blazor.Web/RequestLoggingMiddleware.cs" />
+              <option name="updatedContent" value="using Microsoft.AspNetCore.Http;&#10;using Microsoft.Extensions.Logging;&#10;using System.Threading.Tasks;&#10;using System.Text.Json;&#10;&#10;namespace Blazor.Web;&#10;&#10;public class RequestLoggingMiddleware&#10;{&#10;    private readonly RequestDelegate _next;&#10;    private readonly ILogger&lt;RequestLoggingMiddleware&gt; _logger;&#10;&#10;    public RequestLoggingMiddleware(RequestDelegate next, ILogger&lt;RequestLoggingMiddleware&gt; logger)&#10;    {&#10;        _next = next;&#10;        _logger = logger;&#10;    }&#10;&#10;    public async Task InvokeAsync(HttpContext context)&#10;    {&#10;        var route = context.Request.Path;&#10;        var query = context.Request.QueryString.HasValue ? context.Request.QueryString.Value : &quot;&quot;;&#10;        var method = context.Request.Method;&#10;        var parameters = context.Request.Query.ToDictionary(kvp =&gt; kvp.Key, kvp =&gt; kvp.Value.ToString());&#10;        var body = &quot;&quot;;&#10;&#10;        if (method == &quot;POST&quot; || method == &quot;PUT&quot;)&#10;        {&#10;            context.Request.EnableBuffering();&#10;            using var reader = new StreamReader(context.Request.Body, leaveOpen: true);&#10;            body = await reader.ReadToEndAsync();&#10;            context.Request.Body.Position = 0;&#10;        }&#10;&#10;        _logger.LogInformation(&quot;Route: {Route}, Method: {Method}, Query: {Query}, Parameters: {Parameters}, Body: {Body}&quot;,&#10;            route, method, query, JsonSerializer.Serialize(parameters), body);&#10;&#10;        await _next(context);&#10;    }&#10;}&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

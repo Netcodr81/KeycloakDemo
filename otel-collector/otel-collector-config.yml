@@ -1,0 +1,60 @@
+﻿extensions:
+  health_check:
+  zpages:
+    endpoint: :55679
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_percentage: 50
+    spike_limit_percentage: 30
+  batch:
+  attributes:
+    actions:
+      - key: service.name
+        action: insert
+        value: "otel-collector"
+
+exporters:
+  debug:
+  otlp/jaeger:
+    endpoint: "jaeger:4317"
+    tls:
+      insecure: true
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+  loki:
+    endpoint: "http://loki:3100/loki/api/v1/push"
+    tls:
+      insecure: true
+  otlp/aspire.dashboard:
+    endpoint: "aspire.dashboard:18889"
+    tls:
+      insecure: true
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, attributes, batch]
+      exporters: [debug, otlp/jaeger, otlp/aspire.dashboard]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [debug, prometheus, otlp/aspire.dashboard]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [loki, debug, otlp/aspire.dashboard]
+
+  extensions:
+    - health_check
+    - zpages

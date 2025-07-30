@@ -4,6 +4,7 @@
 @inject IJSRuntime JSRuntime
 @inject HttpClient Http
 @inject IHttpContextAccessor HttpContextAccessor
+@inject ILogger<RefreshTokenPanel> Logger
 
 
 <div class="border-b border-gray-200 bg-white tablet:px-4 py-5 px-6" xmlns="http://www.w3.org/1999/html">
@@ -42,6 +43,7 @@
     protected override async Task OnInitializedAsync()
     {
       var accessToken = await HttpContextAccessor.HttpContext.GetTokenAsync("access_token");
+        Logger.LogInformation("Access Token: {AccessToken}", accessToken);
 
       if (accessToken is not null)
       {

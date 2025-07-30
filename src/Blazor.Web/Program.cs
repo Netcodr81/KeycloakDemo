@@ -1,6 +1,7 @@
 using Blazor.Web;
 using Blazor.Web.Authentication;
 using Blazor.Web.Components;
+using Blazor.Web.Middleware;
 // Keep both imports available (commented one is original)
 using Keycloak.AuthServices.Authentication;
 using Keycloak.AuthServices.Authorization;
@@ -10,17 +11,17 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
-
+using Serilog;
 using TokenHandler = Blazor.Web.Authentication.TokenHandler;
 
 var builder = WebApplication.CreateBuilder(args);
-
-
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddKeycloakAuthenticationAuthorization(builder.Configuration);
+
+builder.Services.AddOpenTelemetryServices(builder);
 
 // Configure cookie OIDC refresher
 builder.Services.ConfigureCookieOidc(
@@ -50,12 +51,17 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseMiddleware<RequestLoggingMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseAntiforgery();
 
+app.UseMiddleware<RequestLoggingMiddleware>();
+
 app.MapStaticAssets();
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
