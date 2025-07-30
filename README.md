@@ -182,7 +182,7 @@ ng serve
 cd src/MVC.Web
 dotnet run
 ```
-**URL**: https://localhost:5001
+**URL**: http://localhost:5204
 
 #### Blazor Application
 ```bash

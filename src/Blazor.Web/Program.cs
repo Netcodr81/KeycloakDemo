@@ -61,6 +61,7 @@ app.UseAntiforgery();
 app.UseMiddleware<RequestLoggingMiddleware>();
 
 app.MapStaticAssets();
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
